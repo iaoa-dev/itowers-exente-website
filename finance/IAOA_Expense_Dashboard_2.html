@@ -1,0 +1,3325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IAOA Expense Dashboard — I Towers Exente AOA</title>
+<style>
+  :root{
+    --ink:#16202c; --muted:#64748b; --line:#e2e8f0; --accent:#1f3a5f; --accent2:#2c4f7c;
+    --bg:#eef1f4; --card:#ffffff; --good:#0a7a3d; --warn:#b45309; --bad:#b91c1c;
+    --chip:#eef2f7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+  h1,h2,h3{margin:0}
+  .wrap{max-width:1480px;margin:0 auto;padding:18px}
+
+  /* Header */
+  header{background:linear-gradient(135deg,var(--accent),#0e1c30);color:#fff;border-radius:12px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+  header h1{font-size:19px;font-weight:700}
+  header .sub{font-size:12px;opacity:.8;margin-top:3px}
+  header .periodbadge{font-size:12px;background:rgba(255,255,255,.15);padding:5px 12px;border-radius:20px}
+
+  /* Brand / logo */
+  .brand{display:flex;align-items:center;gap:14px;min-width:0}
+  .logo-badge{background:#fff;border-radius:9px;padding:8px 12px;display:inline-flex;align-items:center;box-shadow:0 2px 6px rgba(0,0,0,.18);flex-shrink:0}
+  .logo-badge img{height:34px;width:auto;display:block;max-width:200px}
+  .brand-text{min-width:0}
+  .brand-title{font-size:17px;font-weight:700;line-height:1.2}
+  .header-controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .hctl{display:flex;flex-direction:column;gap:3px}
+  .hctl label{font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;opacity:.85}
+  header .hctl select{background:#fff;color:var(--ink);border:none;border-radius:7px;padding:7px 10px;font-size:13px;font-weight:600}
+  @media(max-width:760px){
+    header{flex-direction:column;align-items:flex-start}
+    .logo-badge img{height:28px}
+    .brand-title{font-size:15px}
+  }
+
+  /* Invoices (read-only) month grouping */
+  .inv-summary{font-size:12px;color:var(--muted);margin:2px 0 12px}
+  .inv-summary b{color:var(--accent)}
+  table.inv-table td{user-select:text}
+  tr.month-head td{background:#1f3a5f;color:#fff;font-weight:700;font-size:12px;position:sticky;top:31px;padding:7px 9px;letter-spacing:.3px}
+  tr.month-head td .mh-totals{float:right;font-weight:500;opacity:.92}
+  tr.month-sub td{background:#eef4fb;font-weight:700;border-top:1px solid #cdddf0}
+  tr.month-sub td.lbl{text-align:right;color:var(--accent)}
+  table.inv-table th.sorted-asc::after{content:" ▲";font-size:9px}
+  table.inv-table th.sorted-desc::after{content:" ▼";font-size:9px}
+
+  /* Dashboard control bar */
+  .dash-controls{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;margin-bottom:16px}
+  .dash-controls .hctl label{color:var(--muted)}
+  .dash-controls select,.dash-controls input{padding:9px 11px;font-size:14px}
+  .rate-badge{background:linear-gradient(135deg,#1f3a5f,#2c4f7c);color:#fff;border-radius:10px;padding:9px 16px;min-width:150px}
+  .rate-badge.alt{background:linear-gradient(135deg,#0a7a3d,#0f9b52)}
+  .rate-label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;opacity:.85;font-weight:600}
+  .rate-scope{opacity:.9;text-transform:none;font-weight:400}
+  .rate-value{font-size:22px;font-weight:700;margin-top:2px}
+  .rate-value span{font-size:11px;font-weight:500;opacity:.85}
+
+  /* Mini charts */
+  .mini-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:900px){.mini-row{grid-template-columns:1fr}}
+  .mini-box{background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:11px 13px}
+  .mini-title{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px}
+  .mini-scope{font-weight:400;color:var(--muted);font-size:11px}
+  svg.mini-chart{width:100%;height:auto;display:block;overflow:visible}
+
+  /* Data-entry secondary gate */
+  .de-gate{display:flex;justify-content:center;padding:40px 16px}
+  .de-gate .gate-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:30px 34px;width:360px;text-align:center;box-shadow:0 4px 18px rgba(0,0,0,.1)}
+  .de-gate h2{font-size:17px;color:var(--accent);margin-bottom:5px}
+  .de-gate p{font-size:12px;color:var(--muted);margin:0 0 16px}
+  .de-gate input{width:100%;text-align:center;font-size:15px;letter-spacing:1px}
+  .de-gate button{width:100%;margin-top:12px;background:var(--accent);color:#fff;border:none;border-radius:7px;padding:11px;font-weight:600;font-size:14px}
+  .de-gate button:hover{background:var(--accent2)}
+  #deErr{color:#b91c1c;font-size:12px;font-weight:600;margin-top:10px;min-height:14px}
+
+  /* Import card */
+  .import-card{border-left:4px solid #0a7a3d}
+  .chk{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:#374151;cursor:pointer}
+  .chk input{width:auto;margin:0}
+  .import-status{font-size:13px;margin-top:10px;white-space:pre-line}
+  .import-status.ok{color:var(--good)} .import-status.err{color:var(--bad)} .import-status.warn{color:var(--warn)}
+
+  /* Tabs */
+  .tabs{display:flex;gap:6px;margin:16px 0}
+  .tab{background:#dfe6ee;color:#42566b;border:none;border-radius:8px 8px 0 0;padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer}
+  .tab:hover{background:#d2dce6}
+  .tab.active{background:var(--card);color:var(--accent);box-shadow:0 -2px 6px rgba(0,0,0,.05)}
+  .view{display:none}
+  .view.active{display:block}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;box-shadow:0 1px 4px rgba(0,0,0,.05);margin-bottom:18px}
+  .panel h2{font-size:15px;color:var(--accent);margin-bottom:4px}
+  .panel .desc{font-size:12px;color:var(--muted);margin-bottom:14px}
+
+  /* KPI cards */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-bottom:18px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent2);border-radius:9px;padding:13px 15px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+  .kpi .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+  .kpi .value{font-size:21px;font-weight:700;margin-top:5px;color:var(--ink)}
+  .kpi .unit{font-size:11px;color:var(--muted);font-weight:500}
+  .kpi.amber{border-left-color:var(--warn)} .kpi.green{border-left-color:var(--good)}
+
+  /* Controls */
+  .controls{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .control{display:flex;flex-direction:column;gap:3px}
+  .control label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+  input,select,textarea{padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:inherit;background:#fff;color:var(--ink)}
+  input:focus,select:focus,textarea:focus{outline:2px solid #b9cdf0;border-color:#7d9fd4}
+  button{cursor:pointer}
+  .btn{border:none;border-radius:7px;font-size:13px;font-weight:600;padding:9px 15px;background:var(--accent);color:#fff}
+  .btn:hover{background:var(--accent2)}
+  .btn.ghost{background:var(--chip);color:#2c3e52}
+  .btn.ghost:hover{background:#dde5ee}
+  .btn.sm{padding:6px 10px;font-size:12px}
+  .btn.danger{background:#fee2e2;color:#991b1b}
+  .btn.danger:hover{background:#fecaca}
+
+  /* Dashboard 1 table */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+  table.grid{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}
+  table.grid th,table.grid td{border:1px solid var(--line);padding:6px 9px;text-align:right}
+  table.grid th{background:#f1f5f9;font-weight:600;position:sticky;top:0}
+  table.grid td.cat,table.grid th.cat{text-align:left;position:sticky;left:0;background:#fff;font-weight:600;z-index:1;min-width:170px}
+  table.grid th.cat{background:#f1f5f9;z-index:2}
+  table.grid tr:nth-child(even) td:not(.cat){background:#fafcfe}
+  table.grid td.zero{color:#cbd5e1}
+  table.grid tr.totalrow td{font-weight:700;background:#eef4fb !important;border-top:2px solid var(--accent2)}
+  table.grid tr.persqft td{font-weight:600;background:#f0fdf4 !important;color:#166534;font-style:italic}
+  table.grid td.total-col,table.grid th.total-col{background:#eef4fb;font-weight:700;border-left:2px solid var(--accent2)}
+  .heat0{background:#fff} .heat1{background:#fef9e7 !important} .heat2{background:#fdecc8 !important} .heat3{background:#fbd9a5 !important}
+
+  /* Per-flat table */
+  table.flat{border-collapse:collapse;width:100%;font-size:13px}
+  table.flat th,table.flat td{border:1px solid var(--line);padding:9px 12px;text-align:right}
+  table.flat th{background:#f1f5f9;font-weight:600;font-size:12px}
+  table.flat td.ft,table.flat th.ft{text-align:left;font-weight:600}
+  table.flat tr:hover td{background:#f8fafc}
+
+  /* Charts */
+  .chartgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:1000px){.chartgrid{grid-template-columns:1fr}.kpi .value{font-size:18px}}
+  .chartbox{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+  .chartbox h3{font-size:13px;color:var(--accent);margin-bottom:3px}
+  .chartbox .sub{font-size:11px;color:var(--muted);margin-bottom:10px}
+  .chartbox.full{grid-column:1 / -1}
+  svg.chart{width:100%;display:block;overflow:visible}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:8px}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .legend i{width:11px;height:11px;border-radius:2px;display:inline-block}
+  .tip{position:fixed;pointer-events:none;background:#16202c;color:#fff;font-size:11px;padding:6px 9px;border-radius:5px;opacity:0;transition:opacity .1s;z-index:50;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+
+  /* Data entry */
+  .entry-form{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:900px){.entry-form{grid-template-columns:repeat(2,1fr)}}
+  .entry-form .field{display:flex;flex-direction:column;gap:4px}
+  .entry-form label{font-size:11px;font-weight:700;color:#475569}
+  .entry-form .full{grid-column:1 / -1}
+  .entry-form .computed{background:#f8fafc;border-style:dashed;color:#475569}
+  .formbar{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+  .formbar .grow{flex:1}
+  .editing-note{font-size:12px;color:var(--warn);font-weight:600}
+
+  table.entries{border-collapse:collapse;width:100%;font-size:12px}
+  table.entries th,table.entries td{border-bottom:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+  table.entries th{background:#f8fafc;position:sticky;top:0;font-weight:600;white-space:nowrap;cursor:pointer;user-select:none}
+  table.entries th:hover{background:#eef2f7}
+  table.entries td.num{text-align:right;white-space:nowrap}
+  table.entries tr:hover td{background:#f8fafc}
+  table.entries .act{display:flex;gap:5px}
+  .iconbtn{border:1px solid var(--line);background:#fff;border-radius:5px;padding:3px 7px;font-size:12px;cursor:pointer}
+  .iconbtn:hover{background:#f1f5f9}
+  .iconbtn.del:hover{background:#fee2e2;border-color:#fca5a5}
+  .entries-scroll{max-height:460px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+  .search{flex:1;min-width:180px}
+  .pill{font-size:10px;padding:2px 7px;border-radius:10px;background:var(--chip);color:#475569;white-space:nowrap}
+  .muted{color:var(--muted)}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0a7a3d;color:#fff;padding:11px 18px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;z-index:100;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+  .toast.show{opacity:1}
+  .toast.err{background:var(--bad)}
+
+  /* Passcode gate */
+  body.locked .wrap{display:none}
+  #gate{position:fixed;inset:0;background:linear-gradient(160deg,#1f3a5f,#0e1c30);display:flex;align-items:center;justify-content:center;z-index:1000}
+  body:not(.locked) #gate{display:none}
+  .gate-card{background:#fff;border-radius:12px;padding:34px 38px;width:340px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+  .gate-card h2{margin:0 0 4px;font-size:18px;color:var(--accent)}
+  .gate-card p{margin:0 0 16px;font-size:12px;color:var(--muted)}
+  .gate-card input{text-align:center;font-size:16px;letter-spacing:5px;text-transform:uppercase;width:100%}
+  .gate-card button{width:100%;margin-top:12px;background:var(--accent);color:#fff;border:none;border-radius:7px;padding:11px;font-weight:600}
+  .gate-card button:hover{background:var(--accent2)}
+  #gateErr{color:#b91c1c;font-size:12px;font-weight:600;margin-top:10px;min-height:14px}
+</style>
+</head>
+<body class="locked">
+
+<div id="gate">
+  <div class="gate-card">
+    <h2>IAOA Expense Dashboard</h2>
+    <p>I Towers Exente Apartment Owners Association<br>Enter the access passcode to continue</p>
+    <input id="gateCode" type="password" placeholder="••••" autocomplete="off">
+    <button id="gateBtn">Unlock</button>
+    <div id="gateErr"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="brand-text">
+        <div class="brand-title">I-Towers Exente Expense Dashboard</div>
+        <div class="sub">Live cost dashboard &middot; Period: <b id="periodLabel">—</b></div>
+      </div>
+    </div>
+    <div class="header-controls">
+      <div class="hctl">
+        <label for="fySelect">Financial Year</label>
+        <select id="fySelect">
+          <option value="ALL">All</option>
+          <option value="FY2526">FY 2025-26</option>
+          <option value="FY2627">FY 2026-27</option>
+        </select>
+      </div>
+      <span class="logo-badge"><img id="brandLogo" src="data:image/png;base64,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" alt="I-Towers Exente"></span>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-view="dash">📊 Cost Dashboard</button>
+    <button class="tab" data-view="trend">📈 Trends</button>
+    <button class="tab" data-view="invoices">🧾 Invoices</button>
+    <button class="tab" data-view="entry">✏️ Data Entry</button>
+  </div>
+
+  <!-- ============ DASHBOARD ============ -->
+  <div class="view active" id="view-dash">
+    <div class="panel">
+      <div class="dash-controls">
+        <div class="hctl">
+          <label for="dashMonth">Month</label>
+          <select id="dashMonth"></select>
+        </div>
+        <div class="rate-badge">
+          <div class="rate-label">Avg Monthly SqFt Rate <span id="rateScope" class="rate-scope"></span></div>
+          <div class="rate-value" id="rateValue">₹0.00 <span>/sqft·mo</span></div>
+        </div>
+        <div class="rate-badge alt">
+          <div class="rate-label">Avg Monthly Gross <span id="totalScope" class="rate-scope"></span></div>
+          <div class="rate-value" id="totalValue">₹0 <span>/mo</span></div>
+        </div>
+        <div class="hctl" style="margin-left:auto">
+          <label for="totalSqft">Total Sqft</label>
+          <input id="totalSqft" type="number" min="1" step="1" style="width:130px">
+        </div>
+      </div>
+
+      <div class="mini-row">
+        <div class="mini-box">
+          <div class="mini-title">Monthly Spend (Gross)</div>
+          <svg class="mini-chart" id="miniBars" viewBox="0 0 360 132"></svg>
+        </div>
+        <div class="mini-box">
+          <div class="mini-title">Top Categories <span id="miniTopScope" class="mini-scope"></span></div>
+          <svg class="mini-chart" id="miniTop" viewBox="0 0 360 132"></svg>
+        </div>
+        <div class="mini-box">
+          <div class="mini-title">Cost per Sqft Trend (₹/sqft)</div>
+          <svg class="mini-chart" id="miniSpark" viewBox="0 0 360 132"></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 id="dashTableTitle">Monthly Expense Table (Gross = Base + GST)</h2>
+      <div class="desc">Each cell is the total gross cost (base + GST) for that category in that month, aggregated from your entries. Shaded cells highlight the largest costs; the Financial Year and Month selectors filter what's shown.</div>
+      <div class="tablewrap">
+        <table class="grid" id="dashTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TRENDS ============ -->
+  <div class="view" id="view-trend">
+    <div class="panel" style="margin-bottom:14px">
+      <h2>Cost Trends — Key Items</h2>
+      <div class="desc">Month-wise movement of the biggest cost drivers and overall cost intensity. Hover any point or bar for exact figures.</div>
+    </div>
+    <div class="chartgrid">
+      <div class="chartbox full">
+        <h3>Month-wise Cost per Sq.ft (₹/sqft)</h3>
+        <div class="sub">Gross grand total ÷ total sqft, by month — your overall cost intensity over time.</div>
+        <svg class="chart" id="chartPersqft" viewBox="0 0 900 280"></svg>
+      </div>
+      <div class="chartbox full">
+        <h3>Top Cost Categories — Monthly Trend</h3>
+        <div class="sub">The five largest categories by total spend, tracked month over month.</div>
+        <svg class="chart" id="chartTopTrend" viewBox="0 0 900 320"></svg>
+        <div class="legend" id="trendLegend"></div>
+      </div>
+      <div class="chartbox">
+        <h3>Annual Cost by Category (Gross)</h3>
+        <div class="sub">Total spend per category across the whole period.</div>
+        <svg class="chart" id="chartCatBar" viewBox="0 0 440 460"></svg>
+      </div>
+      <div class="chartbox">
+        <h3>Cost Mix — Share of Total</h3>
+        <div class="sub">Top categories as a share of total spend.</div>
+        <svg class="chart" id="chartDonut" viewBox="0 0 440 460"></svg>
+        <div class="legend" id="donutLegend"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ INVOICES (read-only) ============ -->
+  <div class="view" id="view-invoices">
+    <div class="panel">
+      <h2>Invoices &amp; Expenses — Month-wise</h2>
+      <div class="desc">A read-only listing of every invoice/expense entry, grouped by month. Search, filter, and sort to find anything; this view never alters your data — edits are made on the Data Entry tab.</div>
+      <div class="controls">
+        <input class="search" id="invSearch" placeholder="🔍 Search vendor, invoice no., category, remarks, amount…">
+        <select id="invFilterMonth"><option value="">All months</option></select>
+        <select id="invFilterVendor"><option value="">All vendors</option></select>
+        <select id="invFilterCat"><option value="">All categories</option></select>
+        <button class="btn ghost sm" id="invClearFilters">Clear filters</button>
+      </div>
+      <div class="inv-summary" id="invSummary"></div>
+      <div class="entries-scroll" style="max-height:600px">
+        <table class="entries inv-table" id="invTable">
+          <thead><tr>
+            <th data-sort="date">Date</th><th data-sort="invNo">Invoice #</th>
+            <th data-sort="vendor">Vendor</th><th data-sort="category">Category</th>
+            <th data-sort="subType">Sub Type</th>
+            <th data-sort="base" class="num">Base</th><th data-sort="gst" class="num">GST</th>
+            <th data-sort="gross" class="num">Gross</th><th data-sort="tds" class="num">TDS</th>
+            <th data-sort="net" class="num">Net</th>
+            <th data-sort="payDate">Pay Date</th><th data-sort="cheque">Cheque</th>
+            <th>Remarks</th><th data-sort="by">By</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ DATA ENTRY ============ -->
+  <div class="view" id="view-entry">
+    <div id="deGate" class="de-gate">
+      <div class="gate-card">
+        <h2>🔒 Data Entry — Restricted</h2>
+        <p>This section requires a separate password from the dashboard.</p>
+        <input id="deCode" type="password" placeholder="Data Entry password" autocomplete="off">
+        <button id="deBtn">Unlock Data Entry</button>
+        <div id="deErr"></div>
+      </div>
+    </div>
+
+    <div id="deContent" style="display:none">
+    <div class="panel">
+      <h2 id="entryFormTitle">Add Expense Entry</h2>
+      <div class="desc">Fill in an invoice and it flows straight into the dashboard, per-flat costs, and charts. Gross and Net are computed for you.</div>
+      <div class="entry-form">
+        <div class="field"><label>Invoice Date</label><input id="f_date" type="date"></div>
+        <div class="field"><label>Invoice Number</label><input id="f_invNo" placeholder="e.g., 402"></div>
+        <div class="field"><label>Expense Period (month)</label><select id="f_period"></select></div>
+        <div class="field"><label>Vendor Name</label><input id="f_vendor" list="vendorList" placeholder="Type or pick"><datalist id="vendorList"></datalist></div>
+        <div class="field"><label>Expense Category</label><select id="f_category"></select></div>
+        <div class="field"><label>Expense Sub Type</label><input id="f_subType" list="subTypeList" placeholder="optional"><datalist id="subTypeList"></datalist></div>
+        <div class="field"><label>Base Amount (₹)</label><input id="f_base" type="number" min="0" step="0.01" placeholder="0.00"></div>
+        <div class="field"><label>GST (₹)</label><input id="f_gst" type="number" min="0" step="0.01" placeholder="0.00"></div>
+        <div class="field"><label>Gross = Base + GST (₹)</label><input id="f_gross" class="computed" readonly></div>
+        <div class="field"><label>TDS (₹)</label><input id="f_tds" type="number" min="0" step="0.01" placeholder="0.00"></div>
+        <div class="field"><label>Net Payable (₹)</label><input id="f_net" class="computed" readonly></div>
+        <div class="field"><label>Payment Date</label><input id="f_payDate" type="date"></div>
+        <div class="field"><label>Cheque Ref / No.</label><input id="f_cheque" placeholder="optional"></div>
+        <div class="field"><label>Entered By</label><input id="f_by" placeholder="Name"></div>
+        <div class="field full"><label>Remarks</label><textarea id="f_remarks" rows="2" placeholder="optional"></textarea></div>
+      </div>
+      <div class="formbar">
+        <button class="btn" id="btnSave">＋ Add Entry</button>
+        <button class="btn ghost" id="btnCancelEdit" style="display:none">Cancel edit</button>
+        <span class="editing-note" id="editingNote"></span>
+        <span class="grow"></span>
+        <button class="btn ghost sm" id="btnExportXlsx">⬇ Export Excel</button>
+        <button class="btn ghost sm" id="btnExportCsv">⬇ Export CSV</button>
+        <button class="btn ghost sm" id="btnBackup">⬇ Backup JSON</button>
+        <button class="btn ghost sm" id="btnRestore">⬆ Restore JSON</button>
+        <input type="file" id="restoreFile" accept="application/json" style="display:none">
+      </div>
+    </div>
+
+    <div class="panel import-card">
+      <h2>⬆ Bulk Import from Excel / CSV</h2>
+      <div class="desc">Upload an <b>.xlsx</b> or <b>.csv</b> file. Columns are matched automatically by header name — Invoice Date, Invoice Number, Expense Period, Vendor Name, Expense Category, Expense Sub Type, Base Amount, GST, TDS, Payment Date, Cheque Ref/No, Remarks, Entered By. Gross and Net are recomputed.</div>
+      <div class="formbar">
+        <button class="btn" id="btnImport">📂 Choose file to import</button>
+        <input type="file" id="importFile" accept=".xlsx,.csv" style="display:none">
+        <label class="chk"><input type="checkbox" id="impReplace"> Replace all existing entries (otherwise append)</label>
+        <span class="grow"></span>
+        <button class="btn ghost sm" id="btnTemplate">⬇ Download import template</button>
+      </div>
+      <div id="importStatus" class="import-status"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Logged Entries (<span id="entryCount">0</span>)</h2>
+      <div class="controls">
+        <input class="search" id="entrySearch" placeholder="🔍 Search vendor, category, invoice, remarks…">
+        <select id="entryFilterMonth"><option value="">All months</option></select>
+        <select id="entryFilterCat"><option value="">All categories</option></select>
+        <button class="btn danger sm" id="btnClearAll">Clear all</button>
+      </div>
+      <div class="entries-scroll">
+        <table class="entries" id="entriesTable">
+          <thead><tr>
+            <th data-sort="date">Date</th><th data-sort="invNo">Inv #</th><th data-sort="period">Period</th>
+            <th data-sort="vendor">Vendor</th><th data-sort="category">Category</th>
+            <th data-sort="base" class="num">Base</th><th data-sort="gst" class="num">GST</th>
+            <th data-sort="gross" class="num">Gross</th><th data-sort="tds" class="num">TDS</th>
+            <th data-sort="net" class="num">Net</th><th>Actions</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    </div><!-- /deContent -->
+  </div>
+
+  <footer style="text-align:center;color:var(--muted);font-size:11px;padding:14px 0 4px">
+    Data is stored in this browser. Use <b>Export Excel</b> for your records and <b>Backup JSON</b> before switching devices.
+  </footer>
+</div>
+
+<div class="tip" id="tooltip"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ============== SEED (config + initial entries) ============== */
+const SEED = {
+"cfg": {
+"totalSqft": 607377,
+"months": [
+"Nov-25",
+"Dec-25",
+"Jan-26",
+"Feb-26",
+"Mar-26",
+"Apr-26",
+"May-26",
+"Jun-26",
+"Jul-26",
+"Aug-26",
+"Sep-26",
+"Oct-26",
+"Nov-26"
+],
+"categories": [
+"Electricity",
+"Tanker Water",
+"STP Water Out",
+"STP Charges",
+"FMS Charges",
+"Security Charges",
+"Housekeeping",
+"R&M-Electricals",
+"R&M-Plumbing",
+"R&M Equipment-STP",
+"R&M Equipment-WTP",
+"R&M-General",
+"R&M-Clubhouse",
+"R&M-Lift",
+"Lift AMC",
+"DG Maintenance & Diesel",
+"Pest Control",
+"Gardening/Landscaping",
+"Property Tax",
+"Audit & Professional Fees",
+"Bank Charges",
+"Insurance",
+"Stationery & Printing",
+"Festival & Events",
+"Legal Fees",
+"Miscellaneous"
+],
+"allCategories": [
+"Electricity",
+"Tanker Water",
+"STP Water Out",
+"STP Charges",
+"FMS Charges",
+"Security Charges",
+"Housekeeping",
+"R&M-Electricals",
+"R&M-Plumbing",
+"R&M Equipment-STP",
+"R&M Equipment-WTP",
+"R&M-General",
+"R&M-Clubhouse",
+"R&M-Lift",
+"Lift AMC",
+"DG Maintenance & Diesel",
+"Pest Control",
+"Gardening/Landscaping",
+"Property Tax",
+"Audit & Professional Fees",
+"Bank Charges",
+"Insurance",
+"Stationery & Printing",
+"Festival & Events",
+"Legal Fees",
+"Miscellaneous",
+"Garbage"
+],
+"vendors": [
+"Amazon",
+"Ambika Hardware & Electricals",
+"AP Enterprises",
+"Armex Pro Pvt Ltd",
+"Balram Corporate Services Pvt Ltd.",
+"Bescom",
+"Burhani Hardware Supplies",
+"CNR Minerals",
+"Crystal Drops",
+"Devi Electro Control",
+"EL-Shaddai Enterprises",
+"Global Sports & Fitness",
+"Google India Private Limited",
+"K.P Electric Services",
+"KA36508329",
+"M.J.Electricals",
+"Master Trading Corporation",
+"Mayura Gen Power Services",
+"Nagarjuna Water Supply",
+"Nirmala Enterprises",
+"Omega Rewinding works",
+"Paradigm Integrated Facility Services Pvt Ltd",
+"Pawan Hardware",
+"Pragathi Enterprises",
+"Pragathi Marketing Services",
+"PRIMETECH Systems",
+"Ramdev Paper",
+"Ramnik Plastic Agency",
+"Royal Enterprises",
+"S.S. Fitness Solution",
+"Sangam Hardware and Electricals",
+"Sree Kodandarama Service Station",
+"Sree Vinayaka Garbage Clearance",
+"SRI Manjunatha Enterprises",
+"Sri Ranganatha Electricals",
+"Technocomerz",
+"TK Elevator India Private Limited",
+"VR Finmarc Pvt Ltd"
+],
+"subTypes": {
+"Security Charges": [
+"Boom Barrier Remote control and service",
+"Car Wheel Lock",
+"Security"
+],
+"DG Maintenance & Diesel": [
+"Diesel",
+"Diesel Expense",
+"Genset"
+],
+"STP Charges": [
+"STP Monhtly",
+"STP Monthly",
+"STP-Consumables",
+"Sludge Removal"
+],
+"STP Water Out": [
+"Dewatering",
+"STP Dewatering"
+],
+"Tanker Water": [
+"Tanker Water"
+],
+"Housekeeping": [
+"Garbage Clearance",
+"HK Supplies",
+"Market Place fee amazon",
+"Supplies HK",
+"Supplies HK - Garbage Bags",
+"Supplies HK - Prof. Blower Electric Panels",
+"Waste Bin 120Ltr + delivery charges"
+],
+"R&M-Electricals": [
+"Borewell Repair",
+"Lighting- LED, Cable, Etc",
+"Supplies Electricals"
+],
+"R&M-Clubhouse": [
+"AC Service",
+"Gym Equipment Service",
+"Gym Service Supplies- cable etc",
+"Pool Supplies",
+"Supplies Pool",
+"Swimming Pool Consumables"
+],
+"FMS Charges": [
+"FMS",
+"Facility Management"
+],
+"R&M Equipment-WTP": [
+"Feeder Pump",
+"Grundfos Pump Repair",
+"WTP Consumables",
+"WTP R&M"
+],
+"R&M-Plumbing": [
+"Supplies Plumbing",
+"WTP R&M"
+],
+"Lift AMC": [
+"AMC Lift"
+],
+"Audit & Professional Fees": [
+"GST Regn One Time",
+"GST/TDS Filing"
+],
+"R&M-General": [
+"CCTV Repair",
+"Transformer Maintainance"
+],
+"R&M Equipment-STP": [
+"STP Consumables",
+"STP-Consumables & Service",
+"Supplies Plumbing"
+],
+"Electricity": [
+"Electricity"
+],
+"Miscellaneous": [
+"Domain Email",
+"Safety Consumables",
+"Watercans"
+]
+},
+"flats": [
+{
+"type": "1 BHK",
+"sqft": 733
+},
+{
+"type": "2 BHK",
+"sqft": 1050
+},
+{
+"type": "2.5 BHK",
+"sqft": 1250
+},
+{
+"type": "3 BHK",
+"sqft": 1550
+},
+{
+"type": "4 BHK",
+"sqft": 2200
+}
+],
+"period": "Nov-25 to Nov-26"
+},
+"entries": [
+{
+"date": "2026-05-01",
+"invNo": "118/2026-27",
+"period": "Apr-26",
+"vendor": "Balram Corporate Services Pvt Ltd.",
+"category": "Security Charges",
+"subType": "Security",
+"base": 473132.92,
+"gst": 85163.92,
+"tds": 9556.0,
+"payDate": "2026-05-20",
+"cheque": "86.0",
+"remarks": "TDS deduction doesnt seem right, but okay",
+"by": "Deepak"
+},
+{
+"date": "2026-05-07",
+"invNo": "402",
+"period": "May-26",
+"vendor": "Mayura Gen Power Services",
+"category": "DG Maintenance & Diesel",
+"subType": "Genset",
+"base": 4200.0,
+"gst": 756.0,
+"tds": 0.0,
+"payDate": "2026-05-21",
+"cheque": "85.0",
+"remarks": "[Recon: Bank paid \u20b94,914, dashboard Net \u20b94,956; diff \u20b9-42 (TDS variance)]",
+"by": "Deepak"
+},
+{
+"date": "2026-05-14",
+"invNo": "CD26-27/K/0174",
+"period": "Apr-26",
+"vendor": "Crystal Drops",
+"category": "STP Charges",
+"subType": "STP Monthly",
+"base": 75250.0,
+"gst": 13545.0,
+"tds": 1505.0,
+"payDate": "2026-04-04",
+"cheque": "33.0",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-05-13",
+"invNo": "198",
+"period": "Apr-26",
+"vendor": "Nagarjuna Water Supply",
+"category": "STP Water Out",
+"subType": "Dewatering",
+"base": 57750.0,
+"gst": 0.0,
+"tds": 578.0,
+"payDate": "2026-05-21",
+"cheque": "83.0",
+"remarks": "CHEQUE #83 BOUNCED on 21/05/2026 \u2014 Return reason: 'Alteration on instrument other than date'. Invoice REMAINS UNPAID. Re-issue cheque required.",
+"by": "Deepak"
+},
+{
+"date": "2026-05-13",
+"invNo": "199",
+"period": "Apr-26",
+"vendor": "Nagarjuna Water Supply",
+"category": "Tanker Water",
+"subType": "Tanker Water",
+"base": 580800.0,
+"gst": 0.0,
+"tds": 5808.0,
+"payDate": "2026-05-21",
+"cheque": "84.0",
+"remarks": "484 load at 1200 | [Recon: Bank paid Gross (Base+GST); no TDS deducted]",
+"by": "Deepak"
+},
+{
+"date": "2026-04-30",
+"invNo": "657",
+"period": "Apr-26",
+"vendor": "Sree Vinayaka Garbage Clearance",
+"category": "Housekeeping",
+"subType": "Garbage Clearance",
+"base": 35000.0,
+"gst": 6300.0,
+"tds": 350.0,
+"payDate": "2026-06-01",
+"cheque": "89",
+"remarks": "[Recon 08-Jun: PAID 01/06/26 via Chq#89 \u20b940,950 \u2014 exact match. Bank payee 'SREE VIJAYALAKSHMI' = proprietor of Sree Vinayaka Garbage Clearance (confirmed same party).]",
+"by": "Deepak"
+},
+{
+"date": "2026-04-26",
+"invNo": "4098",
+"period": "Apr-26",
+"vendor": "Ramdev Paper",
+"category": "Housekeeping",
+"subType": "Supplies HK",
+"base": 13941.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-05-25",
+"cheque": "87.0",
+"remarks": "[Recon: 3 invoices consolidated]",
+"by": "Deepak"
+},
+{
+"date": "2026-04-26",
+"invNo": "4099",
+"period": "Apr-26",
+"vendor": "Ramdev Paper",
+"category": "Housekeeping",
+"subType": "Supplies HK",
+"base": 10570.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-05-25",
+"cheque": "87.0",
+"remarks": "[Recon: 3 invoices consolidated]",
+"by": "Deepak"
+},
+{
+"date": "2026-04-26",
+"invNo": "4099",
+"period": "Apr-26",
+"vendor": "Ramdev Paper",
+"category": "Housekeeping",
+"subType": "Supplies HK",
+"base": 1930.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-05-25",
+"cheque": "87.0",
+"remarks": "[Recon: 3 invoices consolidated]",
+"by": "Deepak"
+},
+{
+"date": "2026-04-03",
+"invNo": "1012/26-27",
+"period": "Apr-26",
+"vendor": "Master Trading Corporation",
+"category": "R&M-Electricals",
+"subType": "Supplies Electricals",
+"base": 19400.0,
+"gst": 3492.0,
+"tds": 0.0,
+"payDate": "2026-05-12",
+"cheque": "54.0",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-03-25",
+"invNo": "25-26/0798",
+"period": "Mar-26",
+"vendor": "AP Enterprises",
+"category": "R&M-Clubhouse",
+"subType": "Supplies Pool",
+"base": 16435.0,
+"gst": 2899.8,
+"tds": 0.0,
+"payDate": "2026-05-01",
+"cheque": "68.0",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-04-23",
+"invNo": "26-27/0051",
+"period": "Apr-26",
+"vendor": "AP Enterprises",
+"category": "R&M-Clubhouse",
+"subType": "Supplies Pool",
+"base": 13746.0,
+"gst": 2474.0,
+"tds": 0.0,
+"payDate": "2026-05-01",
+"cheque": "71.0",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-04-17",
+"invNo": "26-27/0038",
+"period": "Apr-26",
+"vendor": "AP Enterprises",
+"category": "R&M-Clubhouse",
+"subType": "Supplies Pool",
+"base": 5050.0,
+"gst": 324.0,
+"tds": 0.0,
+"payDate": "2026-05-01",
+"cheque": "70.0",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-04-27",
+"invNo": "PIFS/26-27/B82",
+"period": "Mar-26",
+"vendor": "Paradigm Integrated Facility Services Pvt Ltd",
+"category": "FMS Charges",
+"subType": "Facility Management",
+"base": 714377.0,
+"gst": 128588.0,
+"tds": 14287.54,
+"payDate": "2026-05-11",
+"cheque": "76.0",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-04-27",
+"invNo": "NE-26-27-258",
+"period": "Apr-26",
+"vendor": "Nirmala Enterprises",
+"category": "R&M Equipment-WTP",
+"subType": "WTP R&M",
+"base": 14700.0,
+"gst": 2646.0,
+"tds": 147.0,
+"payDate": "2026-05-07",
+"cheque": "73.0",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-04-08",
+"invNo": "AHE00076",
+"period": "Apr-26",
+"vendor": "Ambika Hardware & Electricals",
+"category": "R&M-Plumbing",
+"subType": "WTP R&M",
+"base": 1610.16,
+"gst": 289.84,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-04-04",
+"invNo": "KA1033065754",
+"period": "Apr-26",
+"vendor": "TK Elevator India Private Limited",
+"category": "Lift AMC",
+"subType": "AMC Lift",
+"base": 89583.33333333333,
+"gst": 16124.999999999998,
+"tds": 1791.6666666666665,
+"payDate": "",
+"cheque": "",
+"remarks": "Expense To be Split in 3 months. Apr-Jun",
+"by": "Deepak"
+},
+{
+"date": "2026-04-04",
+"invNo": "KA1033065754",
+"period": "May-26",
+"vendor": "TK Elevator India Private Limited",
+"category": "Lift AMC",
+"subType": "AMC Lift",
+"base": 89583.33333333333,
+"gst": 16124.999999999998,
+"tds": 1791.6666666666665,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-04-04",
+"invNo": "KA1033065754",
+"period": "Jun-26",
+"vendor": "TK Elevator India Private Limited",
+"category": "Lift AMC",
+"subType": "AMC Lift",
+"base": 89583.33333333333,
+"gst": 16124.999999999998,
+"tds": 1791.6666666666665,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-03-31",
+"invNo": "1442/2025-26",
+"period": "Mar-26",
+"vendor": "Balram Corporate Services Pvt Ltd.",
+"category": "Security Charges",
+"subType": "Security",
+"base": 466410.5,
+"gst": 83953.88,
+"tds": 9562.0,
+"payDate": "2026-04-18",
+"cheque": "66.0",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-04-07",
+"invNo": "004",
+"period": "Mar-26",
+"vendor": "K.P Electric Services",
+"category": "R&M Equipment-WTP",
+"subType": "WTP R&M",
+"base": 55650.0,
+"gst": 10017.0,
+"tds": 0.0,
+"payDate": "2026-04-13",
+"cheque": "57.0",
+"remarks": "[Recon: Bank paid \u20b965,110, dashboard Net \u20b965,667; diff \u20b9-557 (TDS variance)]",
+"by": "Deepak"
+},
+{
+"date": "2026-03-20",
+"invNo": "047/IAOA/2025-26",
+"period": "Jan-26",
+"vendor": "Pragathi Marketing Services",
+"category": "Audit & Professional Fees",
+"subType": "GST Regn One Time",
+"base": 10000.0,
+"gst": 1800.0,
+"tds": 0.0,
+"payDate": "2026-04-04",
+"cheque": "46.0",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-03-19",
+"invNo": "1023",
+"period": "Mar-26",
+"vendor": "Devi Electro Control",
+"category": "R&M-Electricals",
+"subType": "Supplies Electricals",
+"base": 27495.0,
+"gst": 4949.099999999999,
+"tds": 0.0,
+"payDate": "2026-04-07",
+"cheque": "50.0",
+"remarks": "[Recon: Paid via proxy 'PRANJAL KUMAR']",
+"by": "Deepak"
+},
+{
+"date": "2026-03-07",
+"invNo": "2321/25-26",
+"period": "Mar-26",
+"vendor": "Master Trading Corporation",
+"category": "R&M-Electricals",
+"subType": "Supplies Electricals",
+"base": 12200.0,
+"gst": 2196.0,
+"tds": 0.0,
+"payDate": "2026-04-07",
+"cheque": "41.0",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-03-31",
+"invNo": "636",
+"period": "Mar-26",
+"vendor": "Sree Vinayaka Garbage Clearance",
+"category": "Housekeeping",
+"subType": "Garbage Clearance",
+"base": 40000.0,
+"gst": 7200.0,
+"tds": 0.0,
+"payDate": "2026-02-05",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-03-31",
+"invNo": "CD25-26/K/02064",
+"period": "Mar-26",
+"vendor": "Crystal Drops",
+"category": "STP Charges",
+"subType": "STP Monthly",
+"base": 75250.0,
+"gst": 13545.0,
+"tds": 1505.0,
+"payDate": "2026-05-15",
+"cheque": "64.0",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-04-03",
+"invNo": "5569",
+"period": "Apr-26",
+"vendor": "Sree Kodandarama Service Station",
+"category": "DG Maintenance & Diesel",
+"subType": "Diesel",
+"base": 71008.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-04-24",
+"cheque": "63.0",
+"remarks": "780Ltr",
+"by": "Deepak"
+},
+{
+"date": "2026-03-18",
+"invNo": "CM_18_03_26",
+"period": "Mar-26",
+"vendor": "KA36508329",
+"category": "STP Charges",
+"subType": "Sludge Removal",
+"base": 7000.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-04-15",
+"cheque": "58.0",
+"remarks": "Cash Memo, Need detail | [Recon: Paid via KASTURI NAGA / DASGIRSAB, 2 invoices consolidated]",
+"by": "Deepak"
+},
+{
+"date": "2026-03-16",
+"invNo": "CM_16_03_26",
+"period": "Mar-26",
+"vendor": "KA36508329",
+"category": "STP Charges",
+"subType": "Sludge Removal",
+"base": 4200.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-04-15",
+"cheque": "58.0",
+"remarks": "1400*3 | [Recon: Paid via KASTURI NAGA / DASGIRSAB, 2 invoices consolidated]",
+"by": "Deepak"
+},
+{
+"date": "2026-04-06",
+"invNo": "197",
+"period": "Mar-26",
+"vendor": "Nagarjuna Water Supply",
+"category": "STP Water Out",
+"subType": "Dewatering",
+"base": 109200.0,
+"gst": 0.0,
+"tds": 1092.0,
+"payDate": "2026-04-24",
+"cheque": "59.0",
+"remarks": "104 Load at 1050",
+"by": "Deepak"
+},
+{
+"date": "2026-04-06",
+"invNo": "196",
+"period": "Mar-26",
+"vendor": "Nagarjuna Water Supply",
+"category": "Tanker Water",
+"subType": "Tanker Water",
+"base": 499200.0,
+"gst": 0.0,
+"tds": 4992.0,
+"payDate": "2026-04-24",
+"cheque": "60.0",
+"remarks": "Invoice date seem wrong, put Apr, instead of Mar | [Recon: Bank paid Gross (Base+GST); no TDS deducted]",
+"by": "Deepak"
+},
+{
+"date": "2026-03-21",
+"invNo": "194",
+"period": "Feb-26",
+"vendor": "Nagarjuna Water Supply",
+"category": "Tanker Water",
+"subType": "Tanker Water",
+"base": 441600.0,
+"gst": 0.0,
+"tds": 4416.0,
+"payDate": "2026-04-09",
+"cheque": "48.0",
+"remarks": "[Recon: Bank paid Gross (Base+GST); no TDS deducted]",
+"by": "Deepak"
+},
+{
+"date": "2026-03-21",
+"invNo": "195",
+"period": "Feb-26",
+"vendor": "Nagarjuna Water Supply",
+"category": "STP Water Out",
+"subType": "Dewatering",
+"base": 103950.0,
+"gst": 0.0,
+"tds": 1040.0,
+"payDate": "2026-04-09",
+"cheque": "47.0",
+"remarks": "[Recon: Bank paid \u20b9100,243, dashboard Net \u20b9102,910; diff \u20b9-2,667 (TDS variance)]",
+"by": "Deepak"
+},
+{
+"date": "2026-03-23",
+"invNo": "4063",
+"period": "Mar-26",
+"vendor": "Ramdev Paper",
+"category": "Housekeeping",
+"subType": "Supplies HK",
+"base": 6380.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-02-20",
+"cheque": "",
+"remarks": "[Recon: 2 invoices consolidated]",
+"by": "Deepak"
+},
+{
+"date": "2026-03-23",
+"invNo": "4062",
+"period": "Mar-26",
+"vendor": "Ramdev Paper",
+"category": "Housekeeping",
+"subType": "Supplies HK",
+"base": 16926.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-04-08",
+"cheque": "49.0",
+"remarks": "[Recon: 3 invoices consolidated]",
+"by": "Deepak"
+},
+{
+"date": "2026-03-10",
+"invNo": "TC/25-26:352",
+"period": "Mar-26",
+"vendor": "Technocomerz",
+"category": "R&M-General",
+"subType": "Transformer Maintainance",
+"base": 45250.0,
+"gst": 8145.0,
+"tds": 0.0,
+"payDate": "2026-03-25",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-03-02",
+"invNo": "CD25-26/K/01829",
+"period": "Feb-26",
+"vendor": "Crystal Drops",
+"category": "STP Charges",
+"subType": "STP Monhtly",
+"base": 75250.0,
+"gst": 13545.0,
+"tds": 1505.0,
+"payDate": "2026-05-22",
+"cheque": "82.0",
+"remarks": "[Recon: Bank paid \u20b987,290, dashboard Net \u20b988,795; diff \u20b9-1,505 (TDS variance)]",
+"by": "Deepak"
+},
+{
+"date": "2026-03-18",
+"invNo": "NE-25-26-3392",
+"period": "Mar-26",
+"vendor": "Nirmala Enterprises",
+"category": "R&M Equipment-WTP",
+"subType": "Grundfos Pump Repair",
+"base": 11875.0,
+"gst": 2137.5,
+"tds": 0.0,
+"payDate": "2026-04-28",
+"cheque": "40.0",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-05-10",
+"invNo": "PH0002127/25-26",
+"period": "Mar-26",
+"vendor": "Pawan Hardware",
+"category": "R&M Equipment-STP",
+"subType": "Supplies Plumbing",
+"base": 4876.93,
+"gst": 878.07,
+"tds": 0.0,
+"payDate": "2026-03-27",
+"cheque": "44.0",
+"remarks": "[Recon: Paid via proxy 'SHIJO K PRAKASH']",
+"by": "Deepak"
+},
+{
+"date": "2026-04-04",
+"invNo": "KA1033065753",
+"period": "Mar-26",
+"vendor": "TK Elevator India Private Limited",
+"category": "Lift AMC",
+"subType": "AMC Lift",
+"base": 89583.33333333333,
+"gst": 16124.999999999998,
+"tds": 1791.6666666666665,
+"payDate": "",
+"cheque": "",
+"remarks": "Jan26-Mar 26, AMC Amortize",
+"by": "Deepak"
+},
+{
+"date": "2026-04-04",
+"invNo": "KA1033065753",
+"period": "Feb-26",
+"vendor": "TK Elevator India Private Limited",
+"category": "Lift AMC",
+"subType": "AMC Lift",
+"base": 89583.33333333333,
+"gst": 16124.999999999998,
+"tds": 1791.6666666666665,
+"payDate": "",
+"cheque": "",
+"remarks": "To be Paid in 1 installment, Expense Split",
+"by": "Deepak"
+},
+{
+"date": "2026-04-04",
+"invNo": "KA1033065753",
+"period": "Jan-26",
+"vendor": "TK Elevator India Private Limited",
+"category": "Lift AMC",
+"subType": "AMC Lift",
+"base": 89583.33333333333,
+"gst": 16124.999999999998,
+"tds": 1791.6666666666665,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-02-01",
+"invNo": "Many",
+"period": "Jan-26",
+"vendor": "Bescom",
+"category": "Electricity",
+"subType": "Electricity",
+"base": 416716.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-02-13",
+"cheque": "18.0",
+"remarks": "[Recon: Bank paid \u20b9421,073, dashboard Net \u20b9416,716; diff \u20b94,357 (TDS variance)]",
+"by": "Deepak"
+},
+{
+"date": "2026-03-01",
+"invNo": "Many",
+"period": "Feb-26",
+"vendor": "Bescom",
+"category": "Electricity",
+"subType": "Electricity",
+"base": 378478.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-03-20",
+"cheque": "32.0",
+"remarks": "[Recon: Bank paid \u20b9379,574, dashboard Net \u20b9378,478; diff \u20b91,096 (TDS variance)]",
+"by": "Deepak"
+},
+{
+"date": "2026-04-01",
+"invNo": "Many",
+"period": "Mar-26",
+"vendor": "Bescom",
+"category": "Electricity",
+"subType": "Electricity",
+"base": 442495.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-05-12",
+"cheque": "77.0",
+"remarks": "[Recon: Bank paid \u20b9442,419, dashboard Net \u20b9442,495; diff \u20b9-76 (TDS variance)]",
+"by": "Deepak"
+},
+{
+"date": "2026-05-01",
+"invNo": "Many",
+"period": "Apr-26",
+"vendor": "Bescom",
+"category": "Electricity",
+"subType": "Electricity",
+"base": 441155.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-04-13",
+"cheque": "56.0",
+"remarks": "[Recon: Bank paid \u20b9443,589, dashboard Net \u20b9441,155; diff \u20b92,434 (TDS variance)]",
+"by": "Deepak"
+},
+{
+"date": "2026-05-07",
+"invNo": "PFIS/26-27/B112",
+"period": "Apr-26",
+"vendor": "Paradigm Integrated Facility Services Pvt Ltd",
+"category": "FMS Charges",
+"subType": "Facility Management",
+"base": 651107.0,
+"gst": 117199.26,
+"tds": 13022.14,
+"payDate": "2026-06-05",
+"cheque": "99",
+"remarks": "[Recon 08-Jun: PAID 05/06/26 via Chq#99 \u20b9755,284 \u2192 bank 'PARADIGM INTEGRATED'. Resolves prior exception (the earlier 'paid pre-Jan' assumption was incorrect; invoice was simply unpaid until Jun).]",
+"by": "Deepak"
+},
+{
+"date": "2026-04-06",
+"invNo": "GST/002/26-27",
+"period": "Apr-26",
+"vendor": "Pragathi Enterprises",
+"category": "R&M-General",
+"subType": "CCTV Repair",
+"base": 12458.0,
+"gst": 2242.44,
+"tds": 0.0,
+"payDate": "2026-04-06",
+"cheque": "53.0",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2025-11-30",
+"invNo": "5424106946",
+"period": "Jan-26",
+"vendor": "Google India Private Limited",
+"category": "Miscellaneous",
+"subType": "Domain Email",
+"base": 83.72,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2025-12-31",
+"invNo": "5451782423",
+"period": "Jan-26",
+"vendor": "Google India Private Limited",
+"category": "Miscellaneous",
+"subType": "Domain Email",
+"base": 183.45,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-01-31",
+"invNo": "5475538015",
+"period": "Jan-26",
+"vendor": "Google India Private Limited",
+"category": "Miscellaneous",
+"subType": "Domain Email",
+"base": 183.45,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-02-28",
+"invNo": "5505273135",
+"period": "Feb-26",
+"vendor": "Google India Private Limited",
+"category": "Miscellaneous",
+"subType": "Domain Email",
+"base": 183.45,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-03-31",
+"invNo": "5530472916",
+"period": "Mar-26",
+"vendor": "Google India Private Limited",
+"category": "Miscellaneous",
+"subType": "Domain Email",
+"base": 183.45,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-04-30",
+"invNo": "5552767018",
+"period": "Apr-26",
+"vendor": "Google India Private Limited",
+"category": "Miscellaneous",
+"subType": "Domain Email",
+"base": 160.65,
+"gst": 28.917,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-05-28",
+"invNo": "IAOA/02/2026-27",
+"period": "Jan-26",
+"vendor": "VR Finmarc Pvt Ltd",
+"category": "Audit & Professional Fees",
+"subType": "GST/TDS Filing",
+"base": 10000.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "One single invoice \u20b930,000 (Jan\u2013Mar 26), split 3\u00d7 across these rows for monthly cost allocation \u2014 correct treatment. OPEN \u2014 pending payment.",
+"by": "Deepak"
+},
+{
+"date": "2026-05-28",
+"invNo": "IAOA/02/2026-27",
+"period": "Feb-26",
+"vendor": "VR Finmarc Pvt Ltd",
+"category": "Audit & Professional Fees",
+"subType": "GST/TDS Filing",
+"base": 10000.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-05-28",
+"invNo": "IAOA/02/2026-27",
+"period": "Mar-26",
+"vendor": "VR Finmarc Pvt Ltd",
+"category": "Audit & Professional Fees",
+"subType": "GST/TDS Filing",
+"base": 10000.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-05-28",
+"invNo": "IAOA/02/2026-27",
+"period": "Apr-26",
+"vendor": "VR Finmarc Pvt Ltd",
+"category": "Audit & Professional Fees",
+"subType": "GST/TDS Filing",
+"base": 10000.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "Separate April-26 invoice \u20b910,000 (distinct from the Jan\u2013Mar \u20b930k invoice). [Update invoice# if it differs.] OPEN.",
+"by": "Deepak"
+},
+{
+"date": "2026-02-02",
+"invNo": "CD25-26/K/01668",
+"period": "Jan-26",
+"vendor": "Crystal Drops",
+"category": "STP Charges",
+"subType": "STP Monhtly",
+"base": 75250.0,
+"gst": 13545.0,
+"tds": 1505.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-05-29",
+"invNo": "26-27/969",
+"period": "May-26",
+"vendor": "Royal Enterprises",
+"category": "R&M Equipment-WTP",
+"subType": "WTP Consumables",
+"base": 60000.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-05-30",
+"invNo": "1204",
+"period": "May-26",
+"vendor": "EL-Shaddai Enterprises",
+"category": "R&M-Clubhouse",
+"subType": "AC Service",
+"base": 10600.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-05-31",
+"invNo": "669",
+"period": "May-26",
+"vendor": "Sree Vinayaka Garbage Clearance",
+"category": "Housekeeping",
+"subType": "Garbage Clearance",
+"base": 35000.0,
+"gst": 6300.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "Invoice has summasation mistake",
+"by": "Deepak"
+},
+{
+"date": "2026-05-21",
+"invNo": "01",
+"period": "May-26",
+"vendor": "SRI Manjunatha Enterprises",
+"category": "R&M-General",
+"subType": "Transformer Maintainance",
+"base": 4390.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-05-22",
+"invNo": "416",
+"period": "May-26",
+"vendor": "Global Sports & Fitness",
+"category": "R&M-Clubhouse",
+"subType": "Gym Equipment Service",
+"base": 14300.0,
+"gst": 2574.0,
+"tds": 0.0,
+"payDate": "2026-06-05",
+"cheque": "98",
+"remarks": "[Recon 08-Jun: PAID 05/06/26 via Chq#98 \u2014 bank \u20b916,731 vs invoice \u20b916,874. \u20b9143 (1% TDS) deducted in ERROR (no TDS due). Settle \u20b9143 shortfall with vendor / reverse the TDS.]",
+"by": "Deepak"
+},
+{
+"date": "2026-04-30",
+"invNo": "CD26-27/K/0116",
+"period": "Apr-26",
+"vendor": "Crystal Drops",
+"category": "STP Charges",
+"subType": "STP-Consumables",
+"base": 13300.0,
+"gst": 2394.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "Product Purchase / No TDS. [Recon 08-Jun: OPEN \u2014 distinct invoice, separate from Feb Inv CD25-26/K/01703 (confirmed NOT a duplicate). Pending payment.]",
+"by": "Deepak"
+},
+{
+"date": "2026-06-04",
+"invNo": "CD26-27/K/0324",
+"period": "May-26",
+"vendor": "Crystal Drops",
+"category": "STP Charges",
+"subType": "STP Monhtly",
+"base": 75250.0,
+"gst": 13545.0,
+"tds": 1505.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Deepak"
+},
+{
+"date": "2026-06-04",
+"invNo": "CD26-27/K/0330",
+"period": "May-26",
+"vendor": "Crystal Drops",
+"category": "R&M Equipment-STP",
+"subType": "STP-Consumables & Service",
+"base": 324060.0,
+"gst": 52039.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "Product/Service",
+"by": "Deepak"
+},
+{
+"date": "2026-05-19",
+"invNo": "7458",
+"period": "May-26",
+"vendor": "Sree Kodandarama Service Station",
+"category": "DG Maintenance & Diesel",
+"subType": "Diesel",
+"base": 66528.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-06-03",
+"cheque": "91",
+"remarks": "[Recon 08-Jun: PAID 03/06/26 via Chq#91 \u20b966,528 \u2192 bank 'SREE KODANDARAMA'. Exact match. Invoice #7458 (May-26).]",
+"by": "Deepak"
+},
+{
+"date": "2026-05-25",
+"invNo": "26-27/0121",
+"period": "May-26",
+"vendor": "AP Enterprises",
+"category": "R&M-Clubhouse",
+"subType": "Swimming Pool Consumables",
+"base": 12450.0,
+"gst": 2241.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "Product Purchase",
+"by": "Deepak"
+},
+{
+"date": "2026-05-21",
+"invNo": "NA",
+"period": "May-26",
+"vendor": "Sangam Hardware and Electricals",
+"category": "R&M Equipment-WTP",
+"subType": "WTP Consumables",
+"base": 2986.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "Product Purchase",
+"by": "Deepak"
+},
+{
+"date": "2026-06-01",
+"invNo": "Many",
+"period": "May-26",
+"vendor": "Bescom",
+"category": "Electricity",
+"subType": "Electricity",
+"base": 441802.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "No TDS",
+"by": "Deepak"
+},
+{
+"date": "2026-03-01",
+"invNo": "1330/2025-26",
+"period": "Feb-26",
+"vendor": "Balram Corporate Services Pvt Ltd.",
+"category": "Security Charges",
+"subType": "Security",
+"base": 454336.13,
+"gst": 81780.5,
+"tds": 9227.0,
+"payDate": "2026-03-20",
+"cheque": "",
+"remarks": "",
+"by": "Kala"
+},
+{
+"date": "2026-03-12",
+"invNo": "PIFS/25-26/B1136",
+"period": "Feb-26",
+"vendor": "Paradigm Integrated Facility Services Pvt Ltd",
+"category": "FMS Charges",
+"subType": "Facility Management",
+"base": 778484.08,
+"gst": 140127.14,
+"tds": 15567.0,
+"payDate": "2026-04-03",
+"cheque": "38.0",
+"remarks": "",
+"by": "Kala"
+},
+{
+"date": "2026-02-15",
+"invNo": "SBLZ-293524",
+"period": "Feb-26",
+"vendor": "Amazon",
+"category": "Housekeeping",
+"subType": "Supplies HK - Garbage Bags",
+"base": 516.1,
+"gst": 92.9,
+"tds": 0.0,
+"payDate": "2026-04-08",
+"cheque": "52.0",
+"remarks": "Bought by Kala, paid to kala in cheque - no tds | [Recon: Reimbursement to Kala for 3 items]",
+"by": "Kala"
+},
+{
+"date": "2026-02-10",
+"invNo": "SBLZ-514355",
+"period": "Feb-26",
+"vendor": "Amazon",
+"category": "Housekeeping",
+"subType": "Supplies HK - Prof. Blower Electric Panels",
+"base": 2438.98,
+"gst": 439.02,
+"tds": 0.0,
+"payDate": "2026-04-08",
+"cheque": "52.0",
+"remarks": "Bought by Kala, paid to kala in cheque - no tds | [Recon: Reimbursement to Kala for 3 items]",
+"by": "Kala"
+},
+{
+"date": "2026-02-15",
+"invNo": "MKT-472408845",
+"period": "Feb-26",
+"vendor": "Amazon",
+"category": "Housekeeping",
+"subType": "Market Place fee amazon",
+"base": 4.24,
+"gst": 0.76,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "Bought by Kala, paid to kala in cheque - no tds ",
+"by": "Kala"
+},
+{
+"date": "2026-02-10",
+"invNo": "MKT-462905475",
+"period": "Feb-26",
+"vendor": "Amazon",
+"category": "Housekeeping",
+"subType": "Market Place fee amazon",
+"base": 4.24,
+"gst": 0.76,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "Bought by Kala, paid to kala in cheque - no tds ",
+"by": "Kala"
+},
+{
+"date": "2026-02-24",
+"invNo": "K1162/25-26",
+"period": "Feb-26",
+"vendor": "Ramnik Plastic Agency",
+"category": "Housekeeping",
+"subType": "Waste Bin 120Ltr + delivery charges",
+"base": 8400.0,
+"gst": 1512.0,
+"tds": 0.0,
+"payDate": "2026-04-08",
+"cheque": "52.0",
+"remarks": "Bought by Kala, paid to kala in cheque - no tds | [Recon: Reimbursement to Kala for 3 items]",
+"by": "Kala"
+},
+{
+"date": "2026-02-28",
+"invNo": "623",
+"period": "Feb-26",
+"vendor": "Sree Vinayaka Garbage Clearance",
+"category": "Housekeeping",
+"subType": "Garbage Clearance",
+"base": 40000.0,
+"gst": 7200.0,
+"tds": 472.0,
+"payDate": "2026-04-22",
+"cheque": "61.0",
+"remarks": "TDS calculation not right - paid amount shown 46400 but it should be 46,728 | [Recon: Bank paid \u20b946,800, dashboard Net \u20b946,728; diff \u20b972 (TDS variance)]",
+"by": "Kala"
+},
+{
+"date": "2026-02-11",
+"invNo": "5947",
+"period": "Feb-26",
+"vendor": "Sree Kodandarama Service Station",
+"category": "DG Maintenance & Diesel",
+"subType": "Diesel",
+"base": 74256.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-02-18",
+"cheque": "000021",
+"remarks": "",
+"by": "Kala"
+},
+{
+"date": "2026-02-07",
+"invNo": "4023",
+"period": "Feb-26",
+"vendor": "Ramdev Paper",
+"category": "Housekeeping",
+"subType": "Supplies HK",
+"base": 7810.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-02-20",
+"cheque": "",
+"remarks": "[Recon: 2 invoices consolidated]",
+"by": "Kala"
+},
+{
+"date": "2026-02-12",
+"invNo": "4030",
+"period": "Feb-26",
+"vendor": "Ramdev Paper",
+"category": "Housekeeping",
+"subType": "Supplies HK",
+"base": 2720.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-04-08",
+"cheque": "49.0",
+"remarks": "[Recon: 3 invoices consolidated]",
+"by": "Kala"
+},
+{
+"date": "2026-02-07",
+"invNo": "4022",
+"period": "Feb-26",
+"vendor": "Ramdev Paper",
+"category": "Housekeeping",
+"subType": "Supplies HK",
+"base": 3660.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-04-08",
+"cheque": "49.0",
+"remarks": "[Recon: 3 invoices consolidated]",
+"by": "Kala"
+},
+{
+"date": "2026-02-13",
+"invNo": "291",
+"period": "Feb-26",
+"vendor": "Pawan Hardware",
+"category": "R&M-Plumbing",
+"subType": "Supplies Plumbing",
+"base": 14758.6,
+"gst": 2656.54,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "invoice period not mentioned - so maintaining as feb itself.Dont see TDS",
+"by": "Kala"
+},
+{
+"date": "2026-02-06",
+"invNo": "352",
+"period": "Feb-26",
+"vendor": "PRIMETECH Systems",
+"category": "Security Charges",
+"subType": "Boom Barrier Remote control and service",
+"base": 6316.0,
+"gst": 684.0,
+"tds": 0.0,
+"payDate": "2026-02-09",
+"cheque": "",
+"remarks": "invoice period not mentioned - so maintaining as feb itself.  Dont see TDS",
+"by": "Kala"
+},
+{
+"date": "2026-02-23",
+"invNo": "10907",
+"period": "Feb-26",
+"vendor": "Burhani Hardware Supplies",
+"category": "Security Charges",
+"subType": "Car Wheel Lock",
+"base": 4575.0,
+"gst": 823.5,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "invoice period not mentioned - so maintaining as feb itself.  Dont see TDS",
+"by": "Kala"
+},
+{
+"date": "2026-02-09",
+"invNo": "2227/25-26",
+"period": "Feb-26",
+"vendor": "Master Trading Corporation",
+"category": "R&M-Electricals",
+"subType": "Lighting- LED, Cable, Etc",
+"base": 23278.0,
+"gst": 4190.0,
+"tds": 0.0,
+"payDate": "2026-02-20",
+"cheque": "000023",
+"remarks": "invoice period not mentioned - so maintaining as feb itself.  Dont see TDS | [Recon: 2 invoices consolidated]",
+"by": "Kala"
+},
+{
+"date": "2026-02-12",
+"invNo": "2240/25-26",
+"period": "Feb-26",
+"vendor": "Master Trading Corporation",
+"category": "R&M-Electricals",
+"subType": "Lighting- LED, Cable, Etc",
+"base": 2800.0,
+"gst": 504.0,
+"tds": 0.0,
+"payDate": "2026-02-20",
+"cheque": "000023",
+"remarks": "invoice period not mentioned - so maintaining as feb itself.  Dont see TDS | [Recon: 2 invoices consolidated]",
+"by": "Kala"
+},
+{
+"date": "2026-02-18",
+"invNo": "PH0001988/25-26",
+"period": "Feb-26",
+"vendor": "Pawan Hardware",
+"category": "R&M-Plumbing",
+"subType": "Supplies Plumbing",
+"base": 14032.04,
+"gst": 2525.76,
+"tds": 0.0,
+"payDate": "2026-02-21",
+"cheque": "",
+"remarks": "invoice period not mentioned - so maintaining as feb itself.  Dont see TDS | [Recon: 2 invoices consolidated]",
+"by": "Kala"
+},
+{
+"date": "2026-02-18",
+"invNo": "PH0001989/25-26",
+"period": "Feb-26",
+"vendor": "Pawan Hardware",
+"category": "R&M-Plumbing",
+"subType": "Supplies Plumbing",
+"base": 11329.3,
+"gst": 2039.28,
+"tds": 0.0,
+"payDate": "2026-02-21",
+"cheque": "",
+"remarks": "invoice period not mentioned - so maintaining as feb itself.  Dont see TDS | [Recon: 2 invoices consolidated]",
+"by": "Kala"
+},
+{
+"date": "2026-02-04",
+"invNo": "037",
+"period": "Feb-26",
+"vendor": "S.S. Fitness Solution",
+"category": "R&M-Clubhouse",
+"subType": "Gym Service Supplies- cable etc",
+"base": 3815.0,
+"gst": 686.7,
+"tds": 0.0,
+"payDate": "2026-02-10",
+"cheque": "",
+"remarks": "invoice period not mentioned - so maintaining as feb itself.  Dont see TDS | [Recon: Bank paid \u20b94,500, dashboard Net \u20b94,502; diff \u20b9-2 (TDS variance)]",
+"by": "Kala"
+},
+{
+"date": "2026-02-10",
+"invNo": "CD25-26/K/01703",
+"period": "Feb-26",
+"vendor": "Crystal Drops",
+"category": "STP Charges",
+"subType": "STP-Consumables",
+"base": 13300.0,
+"gst": 2394.0,
+"tds": 0.0,
+"payDate": "2026-06-05",
+"cheque": "90",
+"remarks": "[Recon 08-Jun: PAID 05/06/26 via #90 \u20b915,694. Feb invoice \u2014 distinct purchase from Deepak Inv CD26-27/K/0116 (separate invoice, confirmed not a duplicate).]",
+"by": "Kala"
+},
+{
+"date": "2026-02-03",
+"invNo": "193",
+"period": "Jan-26",
+"vendor": "Nagarjuna Water Supply",
+"category": "STP Water Out",
+"subType": "STP Dewatering",
+"base": 266700.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-02-24",
+"cheque": "",
+"remarks": "[Recon: 2 invoices, TDS variance]",
+"by": "Sathyan"
+},
+{
+"date": "2026-02-03",
+"invNo": "192",
+"period": "Jan-26",
+"vendor": "Nagarjuna Water Supply",
+"category": "Tanker Water",
+"subType": "",
+"base": 472800.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-02-24",
+"cheque": "",
+"remarks": "[Recon: 2 invoices, TDS variance]",
+"by": "Sathyan"
+},
+{
+"date": "2026-02-15",
+"invNo": "1213",
+"period": "Jan-26",
+"vendor": "Balram Corporate Services Pvt Ltd.",
+"category": "Security Charges",
+"subType": "Security",
+"base": 432605.0,
+"gst": 77868.84,
+"tds": 8920.0,
+"payDate": "2026-02-27",
+"cheque": "",
+"remarks": "",
+"by": "Sathyan"
+},
+{
+"date": "2026-02-18",
+"invNo": "720",
+"period": "Feb-26",
+"vendor": "AP Enterprises",
+"category": "R&M-Clubhouse",
+"subType": "Pool Supplies",
+"base": 14400.0,
+"gst": 2299.5,
+"tds": 0.0,
+"payDate": "2026-03-09",
+"cheque": "",
+"remarks": "",
+"by": "Sathyan"
+},
+{
+"date": "2026-02-17",
+"invNo": "B1053",
+"period": "Jan-26",
+"vendor": "Paradigm Integrated Facility Services Pvt Ltd",
+"category": "FMS Charges",
+"subType": "FMS",
+"base": 594136.0,
+"gst": 106945.0,
+"tds": 11883.0,
+"payDate": "2026-03-09",
+"cheque": "",
+"remarks": "",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-29",
+"invNo": "891892893",
+"period": "Jan-26",
+"vendor": "M.J.Electricals",
+"category": "R&M-Electricals",
+"subType": "Borewell Repair",
+"base": 60000.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-02-13",
+"cheque": "",
+"remarks": "Total invoice is 67100 but it was negotiated to 60K and payment should be for 60K | [Recon: Paid via proxy 'MOHAN N']",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-31",
+"invNo": "609",
+"period": "Jan-26",
+"vendor": "Sree Vinayaka Garbage Clearance",
+"category": "Housekeeping",
+"subType": "Garbage Clearance",
+"base": 40000.0,
+"gst": 7200.0,
+"tds": 0.0,
+"payDate": "2026-03-24",
+"cheque": "",
+"remarks": "[Recon: Bank paid \u20b946,400, dashboard Net \u20b947,200; diff \u20b9-800 (TDS variance)]",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-29",
+"invNo": "121",
+"period": "Jan-26",
+"vendor": "Omega Rewinding works",
+"category": "R&M-Electricals",
+"subType": "",
+"base": 11000.0,
+"gst": 1980.0,
+"tds": 0.0,
+"payDate": "2026-02-05",
+"cheque": "",
+"remarks": "",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-30",
+"invNo": "1424",
+"period": "Jan-26",
+"vendor": "Sri Ranganatha Electricals",
+"category": "R&M-Electricals",
+"subType": "",
+"base": 7900.0,
+"gst": 1422.0,
+"tds": 0.0,
+"payDate": "2026-02-04",
+"cheque": "",
+"remarks": "",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-29",
+"invNo": "6223",
+"period": "Jan-26",
+"vendor": "Sree Kodandarama Service Station",
+"category": "DG Maintenance & Diesel",
+"subType": "Diesel Expense",
+"base": 27297.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-02-03",
+"cheque": "",
+"remarks": "",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-23",
+"invNo": "4002",
+"period": "Jan-26",
+"vendor": "Ramdev Paper",
+"category": "Housekeeping",
+"subType": "HK Supplies",
+"base": 9028.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-02-05",
+"cheque": "",
+"remarks": "[Recon: 4 invoices consolidated]",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-23",
+"invNo": "4003",
+"period": "Jan-26",
+"vendor": "Ramdev Paper",
+"category": "Housekeeping",
+"subType": "HK Supplies",
+"base": 5320.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-02-05",
+"cheque": "",
+"remarks": "[Recon: 4 invoices consolidated]",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-23",
+"invNo": "4004",
+"period": "Jan-26",
+"vendor": "Ramdev Paper",
+"category": "Housekeeping",
+"subType": "HK Supplies",
+"base": 2175.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-02-05",
+"cheque": "",
+"remarks": "[Recon: 4 invoices consolidated]",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-23",
+"invNo": "4008",
+"period": "Jan-26",
+"vendor": "Ramdev Paper",
+"category": "Housekeeping",
+"subType": "HK Supplies",
+"base": 1200.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-02-05",
+"cheque": "",
+"remarks": "[Recon: 4 invoices consolidated]",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-24",
+"invNo": "927",
+"period": "Jan-26",
+"vendor": "Sri Ranganatha Electricals",
+"category": "R&M Equipment-WTP",
+"subType": "Feeder Pump",
+"base": 7900.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-16",
+"invNo": "655",
+"period": "Jan-26",
+"vendor": "AP Enterprises",
+"category": "R&M Equipment-STP",
+"subType": "STP Consumables",
+"base": 18103.0,
+"gst": 3105.64,
+"tds": 0.0,
+"payDate": "2026-02-05",
+"cheque": "",
+"remarks": "",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-22",
+"invNo": "252",
+"period": "Jan-26",
+"vendor": "Armex Pro Pvt Ltd",
+"category": "Miscellaneous",
+"subType": "Safety Consumables",
+"base": 12930.0,
+"gst": 2328.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-22",
+"invNo": "1277",
+"period": "Jan-26",
+"vendor": "Armex Pro Pvt Ltd",
+"category": "Miscellaneous",
+"subType": "Safety Consumables",
+"base": 8120.0,
+"gst": 1462.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-09",
+"invNo": "7790",
+"period": "Jan-26",
+"vendor": "Sree Kodandarama Service Station",
+"category": "DG Maintenance & Diesel",
+"subType": "Diesel Expense",
+"base": 90990.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "2026-01-21",
+"cheque": "2.0",
+"remarks": "",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-05",
+"invNo": "142",
+"period": "Jan-26",
+"vendor": "CNR Minerals",
+"category": "Miscellaneous",
+"subType": "Watercans",
+"base": 2600.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Sathyan"
+},
+{
+"date": "2026-01-05",
+"invNo": "143",
+"period": "Jan-26",
+"vendor": "CNR Minerals",
+"category": "Miscellaneous",
+"subType": "Watercans",
+"base": 500.0,
+"gst": 0.0,
+"tds": 0.0,
+"payDate": "",
+"cheque": "",
+"remarks": "",
+"by": "Sathyan"
+}
+]
+};
+
+/* ============== Safe storage ============== */
+const store = (() => {
+  try { localStorage.setItem("__t","1"); localStorage.removeItem("__t");
+        return { get:k=>localStorage.getItem(k), set:(k,v)=>localStorage.setItem(k,v) }; }
+  catch(e){ const m={}; return { get:k=>m[k]??null, set:(k,v)=>{m[k]=v;} }; }
+})();
+const SK = { entries:"iaoa_exp_entries", sqft:"iaoa_exp_sqft", seeded:"iaoa_exp_seeded_v1" };
+
+/* ============== State ============== */
+let CFG = SEED.cfg;
+let entries = [];
+let totalSqft = CFG.totalSqft;
+let editIndex = -1;
+let sortKey = "date", sortDir = -1;
+
+/* Financial-year filter (custom ranges per the AOA's data window) */
+const FY_RANGES = {
+  ALL: null,
+  FY2526: ["Nov-25","Dec-25","Jan-26","Feb-26","Mar-26"],          // Nov 2025 → Mar 2026
+  FY2627: ["Apr-26","May-26","Jun-26","Jul-26","Aug-26","Sep-26","Oct-26","Nov-26"] // Apr 2026 → Nov 2026
+};
+const FY_LABEL = { ALL:"All months", FY2526:"FY 2025-26", FY2627:"FY 2026-27" };
+let fy = "ALL";
+function activeMonths(){
+  const r = FY_RANGES[fy];
+  return r ? r.filter(m=>CFG.months.includes(m)) : CFG.months.slice();
+}
+
+/* ============== Helpers ============== */
+const $ = id => document.getElementById(id);
+const inr = (n,d=0) => (n||0).toLocaleString("en-IN",{minimumFractionDigits:d,maximumFractionDigits:d});
+const gross = e => (e.base||0)+(e.gst||0);
+const net = e => gross(e)-(e.tds||0);
+const esc = s => String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+function toast(msg,err){const t=$("toast");t.textContent=msg;t.className="toast show"+(err?" err":"");setTimeout(()=>t.className="toast",2600);}
+
+/* ============== Load / persist ============== */
+function load(){
+  const saved = store.get(SK.entries);
+  if(saved!==null){ try{ entries = JSON.parse(saved); }catch(e){ entries=[]; } }
+  else if(!store.get(SK.seeded)){ entries = SEED.entries.slice(); store.set(SK.seeded,"1"); persist(); }
+  const sq = store.get(SK.sqft); totalSqft = sq?parseFloat(sq):CFG.totalSqft;
+}
+function persist(){ store.set(SK.entries,JSON.stringify(entries)); }
+function persistSqft(){ store.set(SK.sqft,String(totalSqft)); }
+
+/* ============== Aggregation (mirrors the workbook, scoped to a month list) ============== */
+function monthIndexMap(months){ const m={}; months.forEach((mo,i)=>m[mo]=i); return m; }
+// matrix[category][monthIndex] = gross, over the supplied month list
+function buildMatrix(months){
+  months = months || activeMonths();
+  const cats = CFG.categories;
+  const mi = monthIndexMap(months);
+  const mat = {}; cats.forEach(c=>mat[c]=months.map(()=>0));
+  const other = months.map(()=>0); let hasOther=false;
+  entries.forEach(e=>{
+    const idx = mi[e.period];
+    if(idx===undefined) return;
+    const g = gross(e);
+    if(mat[e.category]) mat[e.category][idx]+=g;
+    else { other[idx]+=g; hasOther=true; }
+  });
+  return {mat,cats,hasOther,other,months};
+}
+function monthTotals(mat,cats,months){ return months.map((_,i)=>cats.reduce((s,c)=>s+mat[c][i],0)); }
+function baseByMonth(months){
+  months = months || activeMonths();
+  const mi=monthIndexMap(months); const arr=months.map(()=>0);
+  entries.forEach(e=>{const i=mi[e.period];if(i!==undefined)arr[i]+=(e.base||0);});
+  return arr;
+}
+// totals for a given month scope (entries whose period falls inside)
+function scopeTotals(months){
+  const mi=monthIndexMap(months); let base=0,gst=0,tds=0,count=0;
+  entries.forEach(e=>{ if(mi[e.period]!==undefined){base+=e.base||0;gst+=e.gst||0;tds+=e.tds||0;count++;} });
+  const g=base+gst;
+  return {count,base,gst,gross:g,tds,netP:g-tds,perSqft:totalSqft?g/totalSqft:0};
+}
+// full-dataset stats (used by exports)
+function stats(){
+  let base=0,gst=0,tds=0;
+  entries.forEach(e=>{base+=e.base||0;gst+=e.gst||0;tds+=e.tds||0;});
+  const g=base+gst;
+  return {count:entries.length,base,gst,gross:g,tds,netP:g-tds,
+    annualPerSqft: totalSqft?g/totalSqft:0,
+    avgMonthlyPerSqft: totalSqft?g/totalSqft/CFG.months.length:0};
+}
+
+/* ============== Dashboard table (FY + month filtered) ============== */
+function displayMonths(){
+  const m=$("dashMonth").value;
+  return (m && m!=="ALL") ? [m] : activeMonths();
+}
+function renderDash(){
+  const months=displayMonths();
+  const {mat,cats,hasOther,other}=buildMatrix(months);
+  const mTot=monthTotals(mat,cats,months);
+
+  // heatmap scaling
+  const allCells=[]; cats.forEach(c=>mat[c].forEach(v=>{if(v>0)allCells.push(v);}));
+  allCells.sort((a,b)=>a-b);
+  const q=p=>allCells.length?allCells[Math.min(allCells.length-1,Math.floor(p*allCells.length))]:0;
+  const t1=q(.70),t2=q(.85),t3=q(.95);
+  const heat=v=>v<=0?"zero":v>=t3?"heat3":v>=t2?"heat2":v>=t1?"heat1":"heat0";
+
+  let html="<thead><tr><th class='cat'>Category</th>";
+  months.forEach(m=>html+=`<th>${m}</th>`);
+  html+="<th class='total-col'>Total (₹)</th></tr></thead><tbody>";
+  cats.forEach(c=>{
+    const rowTot=mat[c].reduce((a,b)=>a+b,0);
+    html+=`<tr><td class='cat'>${esc(c)}</td>`;
+    mat[c].forEach(v=>{ html+=`<td class='${heat(v)}'>${v>0?inr(v):"–"}</td>`; });
+    html+=`<td class='total-col'>${rowTot>0?inr(rowTot):"–"}</td></tr>`;
+  });
+  if(hasOther && other.some(v=>v>0)){
+    const ot=other.reduce((a,b)=>a+b,0);
+    html+=`<tr><td class='cat'>Other / Uncategorised</td>`;
+    other.forEach(v=>html+=`<td class='${v>0?'':'zero'}'>${v>0?inr(v):"–"}</td>`);
+    html+=`<td class='total-col'>${inr(ot)}</td></tr>`;
+  }
+  const grand=mTot.reduce((a,b)=>a+b,0)+(hasOther?other.reduce((a,b)=>a+b,0):0);
+  html+="<tr class='totalrow'><td class='cat'>GRAND TOTAL</td>";
+  months.forEach((_,i)=>{const v=mTot[i]+(hasOther?other[i]:0);html+=`<td>${v>0?inr(v):"–"}</td>`;});
+  html+=`<td class='total-col'>${inr(grand)}</td></tr>`;
+  html+="<tr class='persqft'><td class='cat'>Per Sqft Rate (₹/sqft)</td>";
+  months.forEach((_,i)=>{const v=mTot[i]+(hasOther?other[i]:0);const r=totalSqft?v/totalSqft:0;html+=`<td>${r>0?inr(r,2):"–"}</td>`;});
+  html+=`<td class='total-col'>${totalSqft?inr(grand/totalSqft,2):"–"}</td></tr>`;
+  html+="</tbody>";
+  $("dashTable").innerHTML=html;
+
+  // dynamic AVERAGE-MONTHLY rate + gross badges
+  const monthSel=$("dashMonth").value;
+  const scopeWord = (monthSel && monthSel!=="ALL") ? monthSel : FY_LABEL[fy];
+  // months in scope that actually have spend — divisor for the monthly average
+  const monthsWithData = months.filter((_,i)=>(mTot[i]+(hasOther?other[i]:0))>0).length;
+  const divisor = Math.max(1, monthsWithData);
+  const avgGross = grand/divisor;
+  const avgRate  = totalSqft ? avgGross/totalSqft : 0;
+  const scopeNote = (monthSel && monthSel!=="ALL") ? "· "+scopeWord : `· ${scopeWord} · avg of ${monthsWithData} mo`;
+  $("rateScope").textContent = scopeNote;
+  $("totalScope").textContent = scopeNote;
+  $("rateValue").innerHTML = "₹"+inr(avgRate,2)+' <span>/sqft·mo</span>';
+  $("totalValue").innerHTML = "₹"+inr(avgGross)+' <span>/mo</span>';
+  const ttl = (monthSel && monthSel!=="ALL") ? `Monthly Expense — ${monthSel}` : `Monthly Expense Table — ${FY_LABEL[fy]} (Gross = Base + GST)`;
+  $("dashTableTitle").textContent = ttl;
+
+  renderMiniCharts();
+}
+
+/* ============== Mini charts (Cost Dashboard tab) ============== */
+function renderMiniCharts(){
+  const months=activeMonths();
+  const selMonth=$("dashMonth").value;
+  const {mat,cats,hasOther,other}=buildMatrix(months);
+  const mTot=monthTotals(mat,cats,months).map((v,i)=>v+(hasOther?other[i]:0));
+
+  // 1) Monthly spend bars
+  (function(){
+    const svg=$("miniBars"),W=360,H=132,pad={t:12,r:6,b:22,l:38};
+    const maxV=Math.max(1,...mTot);
+    const n=months.length, bw=(W-pad.l-pad.r)/n*0.66, step=(W-pad.l-pad.r)/n;
+    let s="";
+    for(let i=0;i<=2;i++){const y=pad.t+(H-pad.t-pad.b)*(1-i/2);s+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#e9eef4"/>`;s+=`<text x="${pad.l-5}" y="${y+3}" text-anchor="end" font-size="8" fill="#9aa7b5">${(maxV*i/2/1e5).toFixed(1)}L</text>`;}
+    months.forEach((m,i)=>{
+      const h=(H-pad.t-pad.b)*(mTot[i]/maxV);
+      const x=pad.l+step*i+(step-bw)/2, y=H-pad.b-h;
+      const active = m===selMonth;
+      s+=`<rect x="${x}" y="${y}" width="${bw}" height="${Math.max(0,h)}" rx="2" fill="${active?'#d97706':'#2c4f7c'}" data-m="${m}" data-v="${mTot[i]}"/>`;
+      if(i%2===0||n<=8) s+=`<text x="${x+bw/2}" y="${H-pad.b+12}" text-anchor="middle" font-size="7.5" fill="#9aa7b5">${m.replace('-','-')}</text>`;
+    });
+    svg.innerHTML=s;
+    svg.querySelectorAll("rect[data-m]").forEach(r=>{r.addEventListener("mousemove",e=>showTip(e,`<b>${r.dataset.m}</b><br>₹${inr(+r.dataset.v)}`));r.addEventListener("mouseleave",hideTip);});
+  })();
+
+  // 2) Top categories (scope = selected month if chosen, else FY)
+  (function(){
+    const scopeMonths = (selMonth && selMonth!=="ALL") ? [selMonth] : months;
+    const sm=buildMatrix(scopeMonths);
+    const tot=sm.cats.map(c=>({c,t:sm.mat[c].reduce((a,b)=>a+b,0)})).filter(x=>x.t>0).sort((a,b)=>b.t-a.t).slice(0,5);
+    $("miniTopScope").textContent = (selMonth && selMonth!=="ALL")?("· "+selMonth):"";
+    const svg=$("miniTop"),W=360,pad={t:6,r:48,b:6,l:104};
+    const barH=18,gap=5,H=Math.max(pad.t+pad.b+tot.length*(barH+gap),40);
+    svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+    const maxV=Math.max(1,...tot.map(d=>d.t));
+    let s="";
+    if(!tot.length) s=`<text x="${W/2}" y="24" text-anchor="middle" font-size="11" fill="#9aa7b5">No spend in this scope</text>`;
+    tot.forEach((d,i)=>{const y=pad.t+i*(barH+gap),w=(W-pad.l-pad.r)*(d.t/maxV),col=PALETTE[i%PALETTE.length];
+      s+=`<text x="${pad.l-6}" y="${y+barH/2+3.5}" text-anchor="end" font-size="9.5" fill="#475569">${esc(d.c.length>16?d.c.slice(0,15)+'…':d.c)}</text>`;
+      s+=`<rect x="${pad.l}" y="${y}" width="${w}" height="${barH}" rx="2" fill="${col}" data-c="${esc(d.c)}" data-v="${d.t}"/>`;
+      s+=`<text x="${pad.l+w+5}" y="${y+barH/2+3.5}" font-size="9" fill="#64748b">${d.t>=1e5?(d.t/1e5).toFixed(1)+'L':Math.round(d.t/1e3)+'k'}</text>`;});
+    svg.innerHTML=s;
+    svg.querySelectorAll("rect[data-c]").forEach(r=>{r.addEventListener("mousemove",e=>showTip(e,`<b>${r.dataset.c}</b><br>₹${inr(+r.dataset.v)}`));r.addEventListener("mouseleave",hideTip);});
+  })();
+
+  // 3) Per-sqft sparkline
+  (function(){
+    const data=mTot.map(v=>totalSqft?v/totalSqft:0);
+    const svg=$("miniSpark"),W=360,H=132,pad={t:12,r:10,b:22,l:34};
+    const maxV=Math.max(0.01,...data)*1.15;
+    const n=data.length, X=i=>pad.l+(W-pad.l-pad.r)*(n===1?0.5:i/(n-1)), Y=v=>pad.t+(H-pad.t-pad.b)*(1-v/maxV);
+    let s="";
+    for(let i=0;i<=2;i++){const y=pad.t+(H-pad.t-pad.b)*(1-i/2);s+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#e9eef4"/>`;s+=`<text x="${pad.l-5}" y="${y+3}" text-anchor="end" font-size="8" fill="#9aa7b5">${(maxV*i/2).toFixed(1)}</text>`;}
+    let path="";data.forEach((v,i)=>path+=(i?"L":"M")+X(i)+" "+Y(v)+" ");
+    s+=`<path d="${path}L${X(n-1)} ${Y(0)} L${X(0)} ${Y(0)} Z" fill="#dbeafe" opacity="0.6"/>`;
+    s+=`<path d="${path}" fill="none" stroke="#1f3a5f" stroke-width="2"/>`;
+    data.forEach((v,i)=>{const active=months[i]===selMonth;s+=`<circle cx="${X(i)}" cy="${Y(v)}" r="${active?4:2.5}" fill="${active?'#d97706':'#1f3a5f'}" data-m="${months[i]}" data-v="${v}"/>`;});
+    svg.innerHTML=s;
+    svg.querySelectorAll("circle[data-m]").forEach(r=>{r.addEventListener("mousemove",e=>showTip(e,`<b>${r.dataset.m}</b><br>₹${(+r.dataset.v).toFixed(2)} / sqft`));r.addEventListener("mouseleave",hideTip);});
+  })();
+}
+
+/* ============== Charts (hand-built SVG) ============== */
+const PALETTE=["#1f3a5f","#2f9e6f","#d97706","#9333ea","#dc2626","#0891b2","#65a30d","#db2777"];
+function showTip(evt,html){const t=$("tooltip");t.innerHTML=html;t.style.opacity="1";t.style.left=(evt.clientX+12)+"px";t.style.top=(evt.clientY+12)+"px";}
+function hideTip(){$("tooltip").style.opacity="0";}
+
+function topCategories(n){
+  const {mat,cats}=buildMatrix(activeMonths());
+  const totals=cats.map(c=>({c,t:mat[c].reduce((a,b)=>a+b,0)})).filter(x=>x.t>0);
+  totals.sort((a,b)=>b.t-a.t);
+  return {top:totals.slice(0,n),all:totals,mat};
+}
+
+function renderCharts(){
+  renderPersqftChart();
+  renderTopTrendChart();
+  renderCatBarChart();
+  renderDonutChart();
+}
+
+function axis(svg,W,H,pad,maxV,labels,fmt){
+  // gridlines + y labels + x labels
+  let g="";
+  const steps=4;
+  for(let i=0;i<=steps;i++){
+    const y=pad.t+(H-pad.t-pad.b)*(1-i/steps);
+    const val=maxV*i/steps;
+    g+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#eef2f7"/>`;
+    g+=`<text x="${pad.l-8}" y="${y+3}" text-anchor="end" font-size="10" fill="#94a3b8">${fmt(val)}</text>`;
+  }
+  const n=labels.length;
+  labels.forEach((lb,i)=>{
+    const x=pad.l+(W-pad.l-pad.r)*(n===1?0.5:i/(n-1));
+    g+=`<text x="${x}" y="${H-pad.b+15}" text-anchor="middle" font-size="9.5" fill="#94a3b8">${lb}</text>`;
+  });
+  return g;
+}
+
+function renderPersqftChart(){
+  const months=activeMonths();
+  const {mat,cats,hasOther,other}=buildMatrix(months);
+  const mTot=monthTotals(mat,cats,months).map((v,i)=>v+(hasOther?other[i]:0));
+  const data=mTot.map(v=>totalSqft?v/totalSqft:0);
+  const svg=$("chartPersqft"),W=900,H=280,pad={t:18,r:20,b:34,l:54};
+  const maxV=Math.max(0.001,...data)*1.15;
+  const n=data.length;
+  const X=i=>pad.l+(W-pad.l-pad.r)*(n===1?0.5:i/(n-1));
+  const Y=v=>pad.t+(H-pad.t-pad.b)*(1-v/maxV);
+  let s=axis(svg,W,H,pad,maxV,months,v=>"₹"+v.toFixed(1));
+  // area + line
+  let path="",area="";
+  data.forEach((v,i)=>{ const x=X(i),y=Y(v); path+=(i?"L":"M")+x+" "+y+" "; });
+  area=path+`L${X(n-1)} ${Y(0)} L${X(0)} ${Y(0)} Z`;
+  s+=`<path d="${area}" fill="url(#grad1)" opacity="0.5"/>`;
+  s+=`<defs><linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2c4f7c" stop-opacity="0.5"/><stop offset="100%" stop-color="#2c4f7c" stop-opacity="0"/></linearGradient></defs>`;
+  s+=`<path d="${path}" fill="none" stroke="#1f3a5f" stroke-width="2.5"/>`;
+  data.forEach((v,i)=>{ const x=X(i),y=Y(v);
+    s+=`<circle cx="${x}" cy="${y}" r="${v>0?3.5:0}" fill="#1f3a5f"/>`;
+    s+=`<rect x="${x-14}" y="${pad.t}" width="28" height="${H-pad.t-pad.b}" fill="transparent" data-i="${i}" data-v="${v}"/>`;
+  });
+  svg.innerHTML=s;
+  svg.querySelectorAll("rect[data-i]").forEach(r=>{
+    r.addEventListener("mousemove",e=>showTip(e,`<b>${months[+r.dataset.i]}</b><br>₹${(+r.dataset.v).toFixed(2)} / sqft`));
+    r.addEventListener("mouseleave",hideTip);
+  });
+}
+
+function renderTopTrendChart(){
+  const months=activeMonths();
+  const {top,mat}=topCategories(5);
+  const svg=$("chartTopTrend"),W=900,H=320,pad={t:18,r:20,b:34,l:64};
+  let maxV=0; top.forEach(o=>mat[o.c].forEach(v=>{if(v>maxV)maxV=v;}));
+  maxV=Math.max(1,maxV)*1.12;
+  const n=months.length;
+  const X=i=>pad.l+(W-pad.l-pad.r)*(n===1?0.5:i/(n-1));
+  const Y=v=>pad.t+(H-pad.t-pad.b)*(1-v/maxV);
+  let s=axis(svg,W,H,pad,maxV,months,v=>"₹"+(v>=1e5?(v/1e5).toFixed(1)+"L":Math.round(v/1000)+"k"));
+  top.forEach((o,ci)=>{
+    const col=PALETTE[ci%PALETTE.length];
+    let path="";
+    mat[o.c].forEach((v,i)=>{ path+=(i?"L":"M")+X(i)+" "+Y(v)+" "; });
+    s+=`<path d="${path}" fill="none" stroke="${col}" stroke-width="2.2"/>`;
+    mat[o.c].forEach((v,i)=>{ if(v>0){const x=X(i),y=Y(v);
+      s+=`<circle cx="${x}" cy="${y}" r="3" fill="${col}"/>`;
+      s+=`<rect x="${x-5}" y="${y-5}" width="10" height="10" fill="transparent" data-t="${esc(o.c)}" data-m="${months[i]}" data-v="${v}"/>`;
+    }});
+  });
+  svg.innerHTML=s;
+  svg.querySelectorAll("rect[data-t]").forEach(r=>{
+    r.addEventListener("mousemove",e=>showTip(e,`<b>${r.dataset.t}</b> · ${r.dataset.m}<br>₹${inr(+r.dataset.v)}`));
+    r.addEventListener("mouseleave",hideTip);
+  });
+  $("trendLegend").innerHTML=top.map((o,i)=>`<span><i style="background:${PALETTE[i%PALETTE.length]}"></i>${esc(o.c)}</span>`).join("");
+}
+
+function renderCatBarChart(){
+  const {all}=topCategories(99);
+  const data=all.slice(0,12);
+  const svg=$("chartCatBar"),W=440,pad={t:10,r:60,b:10,l:150};
+  const barH=26,gap=8,H=pad.t+pad.b+data.length*(barH+gap);
+  svg.setAttribute("viewBox",`0 0 ${W} ${Math.max(H,120)}`);
+  const maxV=Math.max(1,...data.map(d=>d.t));
+  let s="";
+  data.forEach((d,i)=>{
+    const y=pad.t+i*(barH+gap);
+    const w=(W-pad.l-pad.r)*(d.t/maxV);
+    const col=PALETTE[i%PALETTE.length];
+    s+=`<text x="${pad.l-8}" y="${y+barH/2+4}" text-anchor="end" font-size="11" fill="#475569">${esc(d.c.length>20?d.c.slice(0,19)+'…':d.c)}</text>`;
+    s+=`<rect x="${pad.l}" y="${y}" width="${w}" height="${barH}" rx="3" fill="${col}" data-c="${esc(d.c)}" data-v="${d.t}"/>`;
+    s+=`<text x="${pad.l+w+6}" y="${y+barH/2+4}" font-size="10.5" fill="#64748b">₹${d.t>=1e5?(d.t/1e5).toFixed(1)+'L':Math.round(d.t/1000)+'k'}</text>`;
+  });
+  svg.innerHTML=s;
+  svg.querySelectorAll("rect[data-c]").forEach(r=>{
+    r.addEventListener("mousemove",e=>showTip(e,`<b>${r.dataset.c}</b><br>₹${inr(+r.dataset.v)}`));
+    r.addEventListener("mouseleave",hideTip);
+  });
+}
+
+function renderDonutChart(){
+  const {all}=topCategories(99);
+  const total=all.reduce((a,b)=>a+b.t,0);
+  const topN=all.slice(0,6);
+  const otherSum=all.slice(6).reduce((a,b)=>a+b.t,0);
+  const segs=topN.map((d,i)=>({label:d.c,v:d.t,col:PALETTE[i%PALETTE.length]}));
+  if(otherSum>0)segs.push({label:"Other",v:otherSum,col:"#cbd5e1"});
+  const svg=$("chartDonut"),cx=220,cy=210,r=140,ri=78;
+  let ang=-Math.PI/2,s="";
+  if(total>0)segs.forEach(seg=>{
+    const a2=ang+2*Math.PI*(seg.v/total);
+    const x1=cx+r*Math.cos(ang),y1=cy+r*Math.sin(ang),x2=cx+r*Math.cos(a2),y2=cy+r*Math.sin(a2);
+    const xi1=cx+ri*Math.cos(a2),yi1=cy+ri*Math.sin(a2),xi2=cx+ri*Math.cos(ang),yi2=cy+ri*Math.sin(ang);
+    const large=(a2-ang)>Math.PI?1:0;
+    s+=`<path d="M${x1} ${y1} A${r} ${r} 0 ${large} 1 ${x2} ${y2} L${xi1} ${yi1} A${ri} ${ri} 0 ${large} 0 ${xi2} ${yi2} Z" fill="${seg.col}" data-l="${esc(seg.label)}" data-v="${seg.v}" data-p="${(seg.v/total*100).toFixed(1)}"/>`;
+    ang=a2;
+  });
+  s+=`<text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="12" fill="#94a3b8">Total</text>`;
+  s+=`<text x="${cx}" y="${cy+16}" text-anchor="middle" font-size="15" font-weight="700" fill="#16202c">₹${total>=1e7?(total/1e7).toFixed(2)+'Cr':(total/1e5).toFixed(1)+'L'}</text>`;
+  svg.innerHTML=s;
+  svg.querySelectorAll("path[data-l]").forEach(p=>{
+    p.addEventListener("mousemove",e=>showTip(e,`<b>${p.dataset.l}</b><br>₹${inr(+p.dataset.v)} · ${p.dataset.p}%`));
+    p.addEventListener("mouseleave",hideTip);
+  });
+  $("donutLegend").innerHTML=segs.map(seg=>`<span><i style="background:${seg.col}"></i>${esc(seg.label.length>18?seg.label.slice(0,17)+'…':seg.label)}</span>`).join("");
+}
+
+/* ============== Data entry form ============== */
+function fillSelect(sel,opts,withBlank){
+  sel.innerHTML=(withBlank?'<option value=""></option>':'')+opts.map(o=>`<option>${esc(o)}</option>`).join("");
+}
+function refreshFormHelpers(){
+  // vendor datalist = config vendors ∪ used vendors
+  const usedV=[...new Set(entries.map(e=>e.vendor).filter(Boolean))];
+  const vendors=[...new Set([...CFG.vendors,...usedV])].sort();
+  $("vendorList").innerHTML=vendors.map(v=>`<option value="${esc(v)}">`).join("");
+  // sub-type datalist for selected category
+  const cat=$("f_category").value;
+  const subs=(CFG.subTypes[cat]||[]);
+  const usedS=[...new Set(entries.filter(e=>e.category===cat).map(e=>e.subType).filter(Boolean))];
+  const all=[...new Set([...subs,...usedS])].sort();
+  $("subTypeList").innerHTML=all.map(s=>`<option value="${esc(s)}">`).join("");
+}
+function recalcForm(){
+  const b=parseFloat($("f_base").value)||0, g=parseFloat($("f_gst").value)||0, t=parseFloat($("f_tds").value)||0;
+  $("f_gross").value="₹"+inr(b+g,2);
+  $("f_net").value="₹"+inr(b+g-t,2);
+}
+function readForm(){
+  return {
+    date:$("f_date").value, invNo:$("f_invNo").value.trim(),
+    period:$("f_period").value, vendor:$("f_vendor").value.trim(),
+    category:$("f_category").value, subType:$("f_subType").value.trim(),
+    base:parseFloat($("f_base").value)||0, gst:parseFloat($("f_gst").value)||0,
+    tds:parseFloat($("f_tds").value)||0, payDate:$("f_payDate").value,
+    cheque:$("f_cheque").value.trim(), remarks:$("f_remarks").value.trim(),
+    by:$("f_by").value.trim()
+  };
+}
+function clearForm(){
+  ["f_invNo","f_vendor","f_subType","f_base","f_gst","f_tds","f_cheque","f_remarks"].forEach(id=>$(id).value="");
+  recalcForm();
+}
+function saveEntry(){
+  const e=readForm();
+  if(!e.period){toast("Pick an expense period (month).",true);return;}
+  if(!e.category){toast("Pick an expense category.",true);return;}
+  if(e.base<=0 && e.gst<=0){toast("Enter a base amount or GST.",true);return;}
+  if(editIndex>=0){ entries[editIndex]=e; toast("Entry updated."); }
+  else { entries.push(e); toast("Entry added."); }
+  editIndex=-1; $("btnCancelEdit").style.display="none"; $("editingNote").textContent=""; $("btnSave").textContent="＋ Add Entry"; $("entryFormTitle").textContent="Add Expense Entry";
+  persist(); clearForm(); refreshAll();
+}
+function editEntry(i){
+  const e=entries[i]; editIndex=i;
+  $("f_date").value=e.date||""; $("f_invNo").value=e.invNo||"";
+  fillSelect($("f_period"),CFG.months); $("f_period").value=e.period||"";
+  $("f_vendor").value=e.vendor||"";
+  $("f_category").value=e.category||CFG.categories[0]; refreshFormHelpers();
+  $("f_subType").value=e.subType||""; $("f_base").value=e.base||""; $("f_gst").value=e.gst||"";
+  $("f_tds").value=e.tds||""; $("f_payDate").value=e.payDate||""; $("f_cheque").value=e.cheque||"";
+  $("f_remarks").value=e.remarks||""; $("f_by").value=e.by||"";
+  recalcForm();
+  $("btnSave").textContent="✔ Update Entry"; $("btnCancelEdit").style.display="";
+  $("editingNote").textContent="Editing entry — invoice "+(e.invNo||"(no number)");
+  $("entryFormTitle").textContent="Edit Expense Entry";
+  document.querySelector('.tab[data-view="entry"]').click();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function deleteEntry(i){
+  if(!confirm("Delete this entry?\n\n"+(entries[i].vendor||"")+" · ₹"+inr(gross(entries[i]))+" · "+entries[i].period))return;
+  entries.splice(i,1); persist(); refreshAll(); toast("Entry deleted.");
+}
+
+/* ============== Entries table ============== */
+function renderEntries(){
+  const q=$("entrySearch").value.toLowerCase();
+  const fm=$("entryFilterMonth").value, fc=$("entryFilterCat").value;
+  // index map preserved for edit/delete
+  let rows=entries.map((e,i)=>({e,i}));
+  if(q)rows=rows.filter(({e})=>[e.vendor,e.category,e.subType,e.invNo,e.remarks,e.by].some(x=>String(x||"").toLowerCase().includes(q)));
+  if(fm)rows=rows.filter(({e})=>e.period===fm);
+  if(fc)rows=rows.filter(({e})=>e.category===fc);
+  rows.sort((a,b)=>{
+    let va,vb;
+    if(sortKey==="gross"){va=gross(a.e);vb=gross(b.e);}
+    else if(sortKey==="net"){va=net(a.e);vb=net(b.e);}
+    else {va=a.e[sortKey];vb=b.e[sortKey];}
+    if(typeof va==="number"&&typeof vb==="number")return (va-vb)*sortDir;
+    return String(va||"").localeCompare(String(vb||""))*sortDir;
+  });
+  const tb=$("entriesTable").querySelector("tbody");
+  tb.innerHTML=rows.map(({e,i})=>`<tr>
+    <td>${esc(e.date)}</td><td>${esc(e.invNo)}</td><td><span class="pill">${esc(e.period)}</span></td>
+    <td>${esc(e.vendor)}</td><td>${esc(e.category)}${e.subType?`<br><span class="muted" style="font-size:11px">${esc(e.subType)}</span>`:""}</td>
+    <td class="num">${inr(e.base)}</td><td class="num">${inr(e.gst)}</td>
+    <td class="num"><b>${inr(gross(e))}</b></td><td class="num">${inr(e.tds)}</td>
+    <td class="num">${inr(net(e))}</td>
+    <td><div class="act"><button class="iconbtn" data-edit="${i}">✏️</button><button class="iconbtn del" data-del="${i}">🗑</button></div></td>
+  </tr>`).join("") || `<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:24px">No entries match.</td></tr>`;
+  tb.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editEntry(+b.dataset.edit));
+  tb.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteEntry(+b.dataset.del));
+  $("entryCount").textContent=entries.length;
+}
+
+/* ============== Invoices (read-only, month-wise) ============== */
+let invSortKey="date", invSortDir=1;
+function populateInvFilters(){
+  const vendors=[...new Set(entries.map(e=>e.vendor).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const cats=[...new Set(entries.map(e=>e.category).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const mv=$("invFilterMonth").value, vv=$("invFilterVendor").value, cv=$("invFilterCat").value;
+  $("invFilterMonth").innerHTML='<option value="">All months</option>'+CFG.months.map(m=>`<option>${esc(m)}</option>`).join("");
+  $("invFilterVendor").innerHTML='<option value="">All vendors</option>'+vendors.map(v=>`<option>${esc(v)}</option>`).join("");
+  $("invFilterCat").innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option>${esc(c)}</option>`).join("");
+  const keep=(sel,val)=>{ if([...sel.options].some(o=>o.value===val)) sel.value=val; };
+  keep($("invFilterMonth"),mv); keep($("invFilterVendor"),vv); keep($("invFilterCat"),cv);
+}
+function renderInvoices(){
+  const q=$("invSearch").value.toLowerCase().trim();
+  const fm=$("invFilterMonth").value, fv=$("invFilterVendor").value, fc=$("invFilterCat").value;
+  let rows=entries.slice();
+  if(q)rows=rows.filter(e=>[e.vendor,e.category,e.subType,e.invNo,e.remarks,e.by,e.cheque,e.date,e.payDate,String(gross(e)),String(e.base)].some(x=>String(x||"").toLowerCase().includes(q)));
+  if(fm)rows=rows.filter(e=>e.period===fm);
+  if(fv)rows=rows.filter(e=>e.vendor===fv);
+  if(fc)rows=rows.filter(e=>e.category===fc);
+  const cmp=(a,b)=>{
+    let va,vb;
+    if(invSortKey==="gross"){va=gross(a);vb=gross(b);}
+    else if(invSortKey==="net"){va=net(a);vb=net(b);}
+    else {va=a[invSortKey];vb=b[invSortKey];}
+    if(typeof va==="number"&&typeof vb==="number")return (va-vb)*invSortDir;
+    return String(va||"").localeCompare(String(vb||""))*invSortDir;
+  };
+  const order=CFG.months;
+  const groups={}; rows.forEach(e=>{(groups[e.period]=groups[e.period]||[]).push(e);});
+  const monthKeys=Object.keys(groups).sort((a,b)=>{
+    const ia=order.indexOf(a), ib=order.indexOf(b);
+    if(ia<0&&ib<0)return String(a).localeCompare(String(b));
+    if(ia<0)return 1; if(ib<0)return -1; return ia-ib;
+  });
+  const COLS=14;
+  let html=""; let gBase=0,gGst=0,gGrs=0,gTds=0,gNet=0,gCount=0;
+  monthKeys.forEach(mk=>{
+    const list=groups[mk].slice().sort(cmp);
+    let mBase=0,mGst=0,mGrs=0,mTds=0,mNet=0;
+    list.forEach(e=>{mBase+=e.base||0;mGst+=e.gst||0;mGrs+=gross(e);mTds+=e.tds||0;mNet+=net(e);});
+    gBase+=mBase;gGst+=mGst;gGrs+=mGrs;gTds+=mTds;gNet+=mNet;gCount+=list.length;
+    html+=`<tr class="month-head"><td colspan="${COLS}">${esc(mk||'(no month)')}<span class="mh-totals">${list.length} entr${list.length===1?'y':'ies'} · Gross ₹${inr(mGrs)}</span></td></tr>`;
+    list.forEach(e=>{
+      html+=`<tr>
+        <td>${esc(e.date)}</td><td>${esc(e.invNo)}</td>
+        <td>${esc(e.vendor)}</td><td>${esc(e.category)}</td><td>${esc(e.subType)||'<span class="muted">—</span>'}</td>
+        <td class="num">${inr(e.base)}</td><td class="num">${inr(e.gst)}</td>
+        <td class="num"><b>${inr(gross(e))}</b></td><td class="num">${inr(e.tds)}</td>
+        <td class="num">${inr(net(e))}</td>
+        <td>${esc(e.payDate)||'<span class="muted">—</span>'}</td><td>${esc(e.cheque)||'<span class="muted">—</span>'}</td>
+        <td>${e.remarks?esc(e.remarks):'<span class="muted">—</span>'}</td><td>${esc(e.by)}</td>
+      </tr>`;
+    });
+    html+=`<tr class="month-sub"><td class="lbl" colspan="5">${esc(mk)} subtotal</td>
+      <td class="num">${inr(mBase)}</td><td class="num">${inr(mGst)}</td><td class="num">${inr(mGrs)}</td>
+      <td class="num">${inr(mTds)}</td><td class="num">${inr(mNet)}</td><td colspan="4"></td></tr>`;
+  });
+  const tb=$("invTable").querySelector("tbody");
+  tb.innerHTML = monthKeys.length ? html : `<tr><td colspan="${COLS}" style="text-align:center;color:var(--muted);padding:24px">No invoices match your search / filters.</td></tr>`;
+  $("invSummary").innerHTML=`Showing <b>${gCount}</b> of <b>${entries.length}</b> entries across <b>${monthKeys.length}</b> month(s) &middot; Base <b>₹${inr(gBase)}</b> &middot; GST <b>₹${inr(gGst)}</b> &middot; Gross <b>₹${inr(gGrs)}</b> &middot; TDS <b>₹${inr(gTds)}</b> &middot; Net <b>₹${inr(gNet)}</b>`;
+  $("invTable").querySelectorAll("th[data-sort]").forEach(th=>{
+    th.classList.remove("sorted-asc","sorted-desc");
+    if(th.dataset.sort===invSortKey) th.classList.add(invSortDir>0?"sorted-asc":"sorted-desc");
+  });
+}
+
+/* ============== Exports ============== */
+const CRC_TABLE=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC_TABLE[(c^u8[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipStore(files){
+  const enc=new TextEncoder(),chunks=[],central=[];let offset=0;
+  const dt=(12<<11),dd=(((new Date().getFullYear()-1980)<<9)|((new Date().getMonth()+1)<<5)|new Date().getDate());
+  for(const f of files){
+    const name=enc.encode(f.name),data=enc.encode(f.data),crc=crc32(data);
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);
+    lh.setUint16(8,0,true);lh.setUint16(10,dt,true);lh.setUint16(12,dd,true);
+    lh.setUint32(14,crc,true);lh.setUint32(18,data.length,true);lh.setUint32(22,data.length,true);
+    lh.setUint16(26,name.length,true);lh.setUint16(28,0,true);
+    chunks.push(new Uint8Array(lh.buffer),name,data);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);
+    ch.setUint16(8,0x0800,true);ch.setUint16(10,0,true);ch.setUint16(12,dt,true);ch.setUint16(14,dd,true);
+    ch.setUint32(16,crc,true);ch.setUint32(20,data.length,true);ch.setUint32(24,data.length,true);
+    ch.setUint16(28,name.length,true);ch.setUint32(42,offset,true);
+    central.push(new Uint8Array(ch.buffer),name);
+    offset+=30+name.length+data.length;
+  }
+  let cd=0;central.forEach(c=>cd+=c.length);
+  const eo=new DataView(new ArrayBuffer(22));
+  eo.setUint32(0,0x06054b50,true);eo.setUint16(8,files.length,true);eo.setUint16(10,files.length,true);
+  eo.setUint32(12,cd,true);eo.setUint32(16,offset,true);
+  return new Blob([...chunks,...central,new Uint8Array(eo.buffer)],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+const xq=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const colL=i=>{let s="";i++;while(i>0){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26);}return s;};
+function sheetXml(headers,rows,widths){
+  let body="";
+  [headers,...rows].forEach((r,ri)=>{
+    body+=`<row r="${ri+1}">`;
+    r.forEach((v,ci)=>{const ref=colL(ci)+(ri+1);
+      body+=(typeof v==="number"&&isFinite(v))?`<c r="${ref}"><v>${Math.round(v*100)/100}</v></c>`:`<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${xq(v)}</t></is></c>`;});
+    body+="</row>";
+  });
+  const cols="<cols>"+widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join("")+"</cols>";
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">${cols}<sheetData>${body}</sheetData></worksheet>`;
+}
+function buildWorkbook(sheets){ // sheets: [{name,xml}]
+  const ctOverrides=sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("");
+  const wbSheets=sheets.map((s,i)=>`<sheet name="${xq(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("");
+  const rels=sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("");
+  const files=[
+    {name:"[Content_Types].xml",data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>${ctOverrides}</Types>`},
+    {name:"_rels/.rels",data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
+    {name:"xl/workbook.xml",data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${wbSheets}</sheets></workbook>`},
+    {name:"xl/_rels/workbook.xml.rels",data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${rels}</Relationships>`}
+  ];
+  sheets.forEach((s,i)=>files.push({name:`xl/worksheets/sheet${i+1}.xml`,data:s.xml}));
+  return zipStore(files);
+}
+function dl(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);}
+
+function dl_xlsx_sheets(){
+  const months=activeMonths();
+  const mi=monthIndexMap(months);
+  const expEntries = (fy==='ALL') ? entries.slice() : entries.filter(e=>mi[e.period]!==undefined);
+  // Data Entry sheet
+  const eHead=["Invoice Date","Invoice Number","Expense Period","Vendor Name","Expense Category","Expense Sub Type","Base Amount","GST","Sum of Base + GST","TDS","Net Payable","Payment Date","Cheque Ref/No","Remarks","Entered By"];
+  const eRows=expEntries.map(e=>[e.date,e.invNo,e.period,e.vendor,e.category,e.subType,e.base,e.gst,gross(e),e.tds,net(e),e.payDate,e.cheque,e.remarks,e.by]);
+  let tb=0,tg=0,tt=0; expEntries.forEach(e=>{tb+=e.base||0;tg+=e.gst||0;tt+=e.tds||0;});
+  eRows.push(["TOTAL","","","","","",tb,tg,tb+tg,tt,tb+tg-tt,"","","",""]);
+  // Dashboard sheet (scoped to FY months)
+  const {mat,cats,hasOther,other}=buildMatrix(months);
+  const mTot=monthTotals(mat,cats,months);
+  const dHead=["Category",...months,"Total (₹)"];
+  const dRows=cats.map(c=>[c,...mat[c],mat[c].reduce((a,b)=>a+b,0)]);
+  if(hasOther&&other.some(v=>v>0))dRows.push(["Other / Uncategorised",...other,other.reduce((a,b)=>a+b,0)]);
+  const grand=months.map((_,i)=>mTot[i]+(hasOther?other[i]:0));
+  dRows.push(["GRAND TOTAL",...grand,grand.reduce((a,b)=>a+b,0)]);
+  dRows.push(["Per Sqft Rate (₹/sqft)",...grand.map(v=>totalSqft?v/totalSqft:0),totalSqft?grand.reduce((a,b)=>a+b,0)/totalSqft:0]);
+  return {months,
+    dataSheet:sheetXml(eHead,eRows,[12,16,12,30,22,16,13,11,15,11,13,12,14,40,12]),
+    dashSheet:sheetXml(dHead,dRows,[24,...months.map(()=>11),13])};
+}
+function exportXlsx(){
+  const {dataSheet,dashSheet}=dl_xlsx_sheets();
+  const wb=buildWorkbook([
+    {name:"Data Entry",xml:dataSheet},
+    {name:"Cost Dashboard",xml:dashSheet}
+  ]);
+  dl(wb,`IAOA_Expense_Dashboard${fy==='ALL'?'':'_'+fy}.xlsx`);
+  toast(`Excel exported (${FY_LABEL[fy]}).`);
+}
+function exportCsv(){
+  const months=activeMonths(); const mi=monthIndexMap(months);
+  const expEntries = (fy==='ALL') ? entries : entries.filter(e=>mi[e.period]!==undefined);
+  const q=s=>'"'+String(s==null?"":s).replace(/"/g,'""')+'"';
+  const head="Invoice Date,Invoice Number,Expense Period,Vendor Name,Expense Category,Expense Sub Type,Base Amount,GST,Sum of Base + GST,TDS,Net Payable,Payment Date,Cheque Ref/No,Remarks,Entered By\n";
+  const rows=expEntries.map(e=>[e.date,e.invNo,e.period,q(e.vendor),q(e.category),q(e.subType),(e.base||0).toFixed(2),(e.gst||0).toFixed(2),gross(e).toFixed(2),(e.tds||0).toFixed(2),net(e).toFixed(2),e.payDate,e.cheque,q(e.remarks),q(e.by)].join(",")).join("\n");
+  dl(new Blob([head+rows],{type:"text/csv"}),`IAOA_Expense_Entries${fy==='ALL'?'':'_'+fy}.csv`);
+  toast(`CSV exported (${FY_LABEL[fy]}).`);
+}
+function backup(){
+  dl(new Blob([JSON.stringify({entries,totalSqft,exportedAt:new Date().toISOString()},null,2)],{type:"application/json"}),"IAOA_Expense_Backup.json");
+  toast("Backup saved (all data).");
+}
+function restore(file){
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(!Array.isArray(d.entries))throw 0;
+      if(!confirm(`Restore ${d.entries.length} entries from backup? This replaces current data.`))return;
+      entries=d.entries; if(d.totalSqft)totalSqft=d.totalSqft;
+      persist();persistSqft(); $("totalSqft").value=totalSqft; refreshAll(); toast("Backup restored.");
+    }catch(e){toast("Invalid backup file.",true);}
+  };
+  r.readAsText(file);
+}
+
+/* ============== Bulk import (xlsx / csv) — self-contained ============== */
+function parseNum(v){ if(v==null||v==='')return 0; if(typeof v==='number')return v; const n=parseFloat(String(v).replace(/[₹,\s]/g,'')); return isNaN(n)?0:n; }
+function colToIdx(letters){ let n=0; for(let i=0;i<letters.length;i++)n=n*26+(letters.charCodeAt(i)-64); return n-1; }
+function unescapeXml(s){ return String(s).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&#(\d+);/g,(m,d)=>String.fromCharCode(+d)).replace(/&amp;/g,'&'); }
+const MON3=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function serialToDate(v){ return new Date(Date.UTC(1899,11,30)+Math.round(v)*86400000); }
+function excelToISO(v){
+  if(v==null||v==='')return '';
+  if(typeof v==='number'){ const d=serialToDate(v); return d.toISOString().slice(0,10); }
+  const s=String(v).trim(); if(!s)return '';
+  let m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/); // dd-mm-yyyy (Indian)
+  if(m){ let dd=+m[1],mm=+m[2],yy=+m[3]; if(yy<100)yy+=2000; if(mm>12&&dd<=12){[dd,mm]=[mm,dd];} const d=new Date(Date.UTC(yy,mm-1,dd)); return isNaN(d)?s:d.toISOString().slice(0,10); }
+  const t=Date.parse(s); return isNaN(t)?s:new Date(t).toISOString().slice(0,10);
+}
+function normPeriod(v){
+  if(v==null||v==='')return '';
+  if(typeof v==='number'){ const d=serialToDate(v); return MON3[d.getUTCMonth()]+'-'+String(d.getUTCFullYear()).slice(2); }
+  const s=String(v).trim();
+  const m=s.match(/^([A-Za-z]{3,})[\-\/ ]?(\d{2,4})$/);
+  if(m){ const mon=m[1].slice(0,3); const cap=mon.charAt(0).toUpperCase()+mon.slice(1).toLowerCase(); let yy=m[2]; if(yy.length===4)yy=yy.slice(2); return cap+'-'+yy; }
+  return s;
+}
+function parseCsv(text){
+  text=text.replace(/^\uFEFF/,'');
+  const rows=[]; let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){ const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=ch; }
+    else { if(ch==='"')q=true; else if(ch===','){row.push(cur);cur='';} else if(ch==='\n'){row.push(cur);rows.push(row);row=[];cur='';} else if(ch!=='\r')cur+=ch; }
+  }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows;
+}
+async function inflateRaw(u8){
+  if(typeof DecompressionStream==='undefined') throw new Error('This browser cannot read .xlsx. Please use a CSV file, or update your browser.');
+  const ds=new DecompressionStream('deflate-raw');
+  const ab=await new Response(new Blob([u8]).stream().pipeThrough(ds)).arrayBuffer();
+  return new Uint8Array(ab);
+}
+async function parseZip(u8){
+  const dv=new DataView(u8.buffer,u8.byteOffset,u8.byteLength);
+  let eocd=-1;
+  for(let i=u8.length-22;i>=0;i--){ if(dv.getUint32(i,true)===0x06054b50){eocd=i;break;} }
+  if(eocd<0) throw new Error('Not a valid .xlsx file.');
+  const cdOff=dv.getUint32(eocd+16,true), cdCnt=dv.getUint16(eocd+10,true);
+  const dec=new TextDecoder(); const out={}; let p=cdOff;
+  for(let i=0;i<cdCnt;i++){
+    if(dv.getUint32(p,true)!==0x02014b50) break;
+    const method=dv.getUint16(p+10,true);
+    const compSize=dv.getUint32(p+20,true);
+    const nameLen=dv.getUint16(p+28,true), extraLen=dv.getUint16(p+30,true), commLen=dv.getUint16(p+32,true);
+    const lho=dv.getUint32(p+42,true);
+    const name=dec.decode(u8.subarray(p+46,p+46+nameLen));
+    if(/\.xml$/.test(name)){
+      const lNameLen=dv.getUint16(lho+26,true), lExtraLen=dv.getUint16(lho+28,true);
+      const dataStart=lho+30+lNameLen+lExtraLen;
+      const comp=u8.subarray(dataStart,dataStart+compSize);
+      out[name]= method===0 ? comp : await inflateRaw(comp);
+    }
+    p+=46+nameLen+extraLen+commLen;
+  }
+  return out;
+}
+function parseSharedStrings(xml){
+  const arr=[]; const re=/<si\b[^>]*>([\s\S]*?)<\/si>/g; let m;
+  while((m=re.exec(xml))){ const texts=[...m[1].matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g)].map(x=>unescapeXml(x[1])); arr.push(texts.join('')); }
+  return arr;
+}
+function parseSheet(xml,shared){
+  const rows=[]; const rowRe=/<row\b[^>]*>([\s\S]*?)<\/row>/g; let rm;
+  while((rm=rowRe.exec(xml))){
+    const cells=[]; const cellRe=/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g; let cm;
+    while((cm=cellRe.exec(rm[1]))){
+      const attrs=cm[1]||'', inner=cm[2]||'';
+      const refM=attrs.match(/r="([A-Z]+)\d+"/); const t=(attrs.match(/t="([^"]+)"/)||[])[1];
+      let val=null;
+      if(t==='s'){ const vm=inner.match(/<v>([\s\S]*?)<\/v>/); if(vm)val=shared[+vm[1]]; }
+      else if(t==='inlineStr'){ const tm=inner.match(/<t\b[^>]*>([\s\S]*?)<\/t>/); val=tm?unescapeXml(tm[1]):''; }
+      else if(t==='str'){ const vm=inner.match(/<v>([\s\S]*?)<\/v>/); val=vm?unescapeXml(vm[1]):''; }
+      else { const vm=inner.match(/<v>([\s\S]*?)<\/v>/); val=vm?parseFloat(vm[1]):null; }
+      const col=refM?colToIdx(refM[1]):cells.length;
+      cells[col]=val;
+    }
+    rows.push(cells);
+  }
+  return rows;
+}
+async function readXlsx(file){
+  const u8=new Uint8Array(await file.arrayBuffer());
+  const parts=await parseZip(u8);
+  const dec=new TextDecoder();
+  const shared = parts['xl/sharedStrings.xml'] ? parseSharedStrings(dec.decode(parts['xl/sharedStrings.xml'])) : [];
+  let sheetKey='xl/worksheets/sheet1.xml';
+  if(!parts[sheetKey]){
+    const ws=Object.keys(parts).filter(k=>/^xl\/worksheets\/sheet\d+\.xml$/.test(k)).sort();
+    if(!ws.length) throw new Error('No worksheet found in file.');
+    sheetKey=ws[0];
+  }
+  return parseSheet(dec.decode(parts[sheetKey]),shared);
+}
+const IMPORT_ALIASES={
+  date:["invoice date","date","inv date","bill date"],
+  invNo:["invoice number","invoice no","invoice #","inv #","inv no","invoice","bill no","bill number"],
+  period:["expense period","period","month","expense month"],
+  vendor:["vendor name","vendor","supplier","party","payee"],
+  category:["expense category","category","head","expense head","gl"],
+  subType:["expense sub type","sub type","subtype","sub-type","sub head"],
+  base:["base amount","base","amount","taxable value","taxable","net amount","value"],
+  gst:["gst","tax","gst amount","tax amount"],
+  tds:["tds","tds amount","tds deducted"],
+  payDate:["payment date","pay date","paid on","payment dt"],
+  cheque:["cheque ref/no","cheque ref/no.","cheque ref","cheque no","cheque","chq","chq no","utr","payment ref","ref"],
+  remarks:["remarks","remark","notes","note","narration"],
+  by:["entered by","by","user","prepared by"]
+};
+function mapImportRows(rows){
+  const warnings=[];
+  if(!rows||!rows.length) return {entries:[],warnings:["File appears empty."],mappedCols:[]};
+  // header = first row with any non-empty text cell
+  let hi=0;
+  for(let i=0;i<rows.length;i++){ if(rows[i]&&rows[i].some(c=>typeof c==='string'&&c.trim())){hi=i;break;} }
+  const header=(rows[hi]||[]).map(c=>String(c==null?"":c).trim().toLowerCase().replace(/\s+/g,' '));
+  const colmap={};
+  Object.keys(IMPORT_ALIASES).forEach(field=>{
+    for(let c=0;c<header.length;c++){ if(IMPORT_ALIASES[field].includes(header[c])){colmap[field]=c;break;} }
+  });
+  const mappedCols=Object.keys(colmap);
+  if(colmap.base===undefined && colmap.gst===undefined){
+    return {entries:[],warnings:["Couldn't find a 'Base Amount' or 'GST' column. Check that your file's first row has headers like Base Amount, GST, Expense Period, Expense Category."],mappedCols};
+  }
+  const get=(row,f)=> colmap[f]!==undefined ? row[colmap[f]] : undefined;
+  const out=[]; let skipped=0; const badMonths=new Set(), badCats=new Set();
+  const validCats=new Set(CFG.categories), validMonths=new Set(CFG.months);
+  for(let i=hi+1;i<rows.length;i++){
+    const row=rows[i]; if(!row||!row.length) continue;
+    const firstCell=String(row[0]==null?"":row[0]).trim().toLowerCase();
+    if(firstCell.startsWith('total')||firstCell.startsWith('grand total')) continue;
+    const base=parseNum(get(row,'base')), gst=parseNum(get(row,'gst')), tds=parseNum(get(row,'tds'));
+    const category=String(get(row,'category')==null?"":get(row,'category')).trim();
+    const period=normPeriod(get(row,'period'));
+    if(base===0&&gst===0&&!category&&!period){ skipped++; continue; }
+    if(period && !validMonths.has(period)) badMonths.add(period);
+    if(category && !validCats.has(category)) badCats.add(category);
+    out.push({
+      date:excelToISO(get(row,'date')), invNo:String(get(row,'invNo')==null?"":get(row,'invNo')).trim(),
+      period, vendor:String(get(row,'vendor')==null?"":get(row,'vendor')).trim(),
+      category, subType:String(get(row,'subType')==null?"":get(row,'subType')).trim(),
+      base, gst, tds,
+      payDate:excelToISO(get(row,'payDate')), cheque:String(get(row,'cheque')==null?"":get(row,'cheque')).trim(),
+      remarks:String(get(row,'remarks')==null?"":get(row,'remarks')).trim(), by:String(get(row,'by')==null?"":get(row,'by')).trim()
+    });
+  }
+  if(badMonths.size) warnings.push(`Unrecognised period(s) — these rows will appear under "Other": ${[...badMonths].slice(0,6).join(', ')}${badMonths.size>6?'…':''}`);
+  if(badCats.size) warnings.push(`Category not in the standard list — will group under "Other / Uncategorised": ${[...badCats].slice(0,6).join(', ')}${badCats.size>6?'…':''}`);
+  if(skipped) warnings.push(`${skipped} blank/non-data row(s) skipped.`);
+  return {entries:out,warnings,mappedCols};
+}
+async function doImport(file){
+  const st=$("importStatus"); st.className="import-status"; st.textContent="Reading "+file.name+" …";
+  let rows;
+  try{
+    const name=file.name.toLowerCase();
+    if(name.endsWith('.csv')) rows=parseCsv(await file.text());
+    else if(name.endsWith('.xlsx')) rows=await readXlsx(file);
+    else { st.className="import-status err"; st.textContent="Please choose a .xlsx or .csv file."; return; }
+  }catch(e){ st.className="import-status err"; st.textContent="Could not read file: "+e.message; return; }
+  const {entries:imp,warnings,mappedCols}=mapImportRows(rows);
+  if(!imp.length){ st.className="import-status err"; st.textContent="No data rows imported.\n"+warnings.join("\n"); return; }
+  const replace=$("impReplace").checked;
+  const mode = replace ? `REPLACE all ${entries.length} existing entries with these ${imp.length}` : `APPEND these ${imp.length} to your existing ${entries.length}`;
+  const msg=`Found ${imp.length} row(s).\nColumns matched: ${mappedCols.join(', ')}.\n`+(warnings.length?`\nNotes:\n• ${warnings.join('\n• ')}\n`:'')+`\nProceed to ${mode}?`;
+  if(!confirm(msg)){ st.className="import-status"; st.textContent="Import cancelled."; return; }
+  entries = replace ? imp : entries.concat(imp);
+  persist(); refreshAll();
+  st.className="import-status ok";
+  st.textContent=`✔ Imported ${imp.length} entr${imp.length===1?'y':'ies'}${replace?' (replaced)':' (appended)'}. Total now ${entries.length}.`+(warnings.length?`\n${warnings.join('\n')}`:'');
+  toast(`Imported ${imp.length} entries.`);
+}
+function downloadTemplate(){
+  const head=["Invoice Date","Invoice Number","Expense Period","Vendor Name","Expense Category","Expense Sub Type","Base Amount","GST","TDS","Payment Date","Cheque Ref/No","Remarks","Entered By"];
+  const ex=["2026-05-07","402","May-26","Mayura Gen Power Services","DG Maintenance & Diesel","Genset",4200,756,0,"2026-05-21","85","Sample row — delete before importing","Deepak"];
+  const wb=buildWorkbook([{name:"Import Template",xml:sheetXml(head,[ex],[12,16,12,30,24,18,13,11,11,13,14,40,12])}]);
+  dl(wb,"IAOA_Import_Template.xlsx");
+  toast("Template downloaded.");
+}
+
+/* ============== Refresh orchestration ============== */
+function refreshAll(){
+  renderDash(); renderCharts(); renderEntries(); populateInvFilters(); renderInvoices(); refreshFormHelpers();
+}
+
+/* ============== Month dropdown + FY ============== */
+function populateDashMonth(keep){
+  const months=activeMonths();
+  const prev = keep ? $("dashMonth").value : "ALL";
+  $("dashMonth").innerHTML=`<option value="ALL">All Months</option>`+months.map(m=>`<option>${esc(m)}</option>`).join("");
+  $("dashMonth").value = (prev && (prev==="ALL"||months.includes(prev))) ? prev : "ALL";
+}
+function applyFY(){
+  fy=$("fySelect").value;
+  populateDashMonth(false);
+  renderDash(); renderCharts();
+}
+
+/* ============== Passcode (main) ============== */
+const PASSCODE="IAOA";
+function gateInit(){
+  let ok=false; try{ok=sessionStorage.getItem("iaoa_exp_auth")==="1";}catch(e){}
+  if(ok){document.body.classList.remove("locked");boot();return;}
+  const tryUnlock=()=>{
+    if($("gateCode").value.trim().toUpperCase()===PASSCODE){
+      try{sessionStorage.setItem("iaoa_exp_auth","1");}catch(e){}
+      document.body.classList.remove("locked"); boot();
+    }else{$("gateErr").textContent="Incorrect passcode. Please try again.";$("gateCode").value="";$("gateCode").focus();}
+  };
+  $("gateBtn").onclick=tryUnlock;
+  $("gateCode").addEventListener("keydown",e=>{if(e.key==="Enter")tryUnlock();});
+  setTimeout(()=>$("gateCode").focus(),50);
+}
+
+/* ============== Data Entry secondary gate ============== */
+const DATA_PASSCODE="Welcome@123";
+function isDeAuthed(){ try{return sessionStorage.getItem("iaoa_exp_dataauth")==="1";}catch(e){return false;} }
+function showDeState(){
+  const authed=isDeAuthed();
+  $("deGate").style.display=authed?"none":"flex";
+  $("deContent").style.display=authed?"block":"none";
+}
+function deGateInit(){
+  const tryUnlock=()=>{
+    if($("deCode").value===DATA_PASSCODE){
+      try{sessionStorage.setItem("iaoa_exp_dataauth","1");}catch(e){}
+      $("deErr").textContent=""; $("deCode").value=""; showDeState(); refreshFormHelpers(); renderEntries();
+    }else{$("deErr").textContent="Incorrect password.";$("deCode").value="";$("deCode").focus();}
+  };
+  $("deBtn").onclick=tryUnlock;
+  $("deCode").addEventListener("keydown",e=>{if(e.key==="Enter")tryUnlock();});
+}
+
+/* ============== Boot ============== */
+let booted=false;
+function boot(){
+  if(booted)return; booted=true;
+  load();
+  $("periodLabel").textContent=CFG.period;
+
+  // tabs
+  document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===t));
+    document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+t.dataset.view));
+    if(t.dataset.view==="trend")renderCharts();
+    if(t.dataset.view==="invoices")renderInvoices();
+    if(t.dataset.view==="entry")showDeState();
+  });
+
+  // global FY selector
+  $("fySelect").value=fy;
+  $("fySelect").addEventListener("change",applyFY);
+
+  // dashboard month + sqft
+  populateDashMonth(false);
+  $("dashMonth").addEventListener("change",()=>{renderDash();});
+  $("totalSqft").value=totalSqft;
+  $("totalSqft").addEventListener("input",()=>{totalSqft=parseFloat($("totalSqft").value)||0;persistSqft();renderDash();renderCharts();});
+
+  // entry form selects
+  fillSelect($("f_period"),CFG.months);
+  fillSelect($("f_category"),CFG.categories);
+  const baseM=baseByMonth(CFG.months); let defM=CFG.months[0];
+  for(let i=CFG.months.length-1;i>=0;i--){if(baseM[i]>0){defM=CFG.months[i];break;}}
+  $("f_period").value=defM;
+  $("f_date").value=new Date().toISOString().slice(0,10);
+  ["f_base","f_gst","f_tds"].forEach(id=>$(id).addEventListener("input",recalcForm));
+  $("f_category").addEventListener("change",refreshFormHelpers);
+  $("btnSave").onclick=saveEntry;
+  $("btnCancelEdit").onclick=()=>{editIndex=-1;$("btnCancelEdit").style.display="none";$("editingNote").textContent="";$("btnSave").textContent="＋ Add Entry";$("entryFormTitle").textContent="Add Expense Entry";clearForm();};
+
+  // entries filters + sorting
+  fillSelect2($("entryFilterMonth"),CFG.months,"All months");
+  fillSelect2($("entryFilterCat"),CFG.categories,"All categories");
+  $("entrySearch").addEventListener("input",renderEntries);
+  $("entryFilterMonth").addEventListener("change",renderEntries);
+  $("entryFilterCat").addEventListener("change",renderEntries);
+  document.querySelectorAll("#entriesTable th[data-sort]").forEach(th=>th.onclick=()=>{
+    const k=th.dataset.sort; if(sortKey===k)sortDir*=-1; else{sortKey=k;sortDir=1;} renderEntries();
+  });
+
+  // invoices (read-only) controls
+  populateInvFilters();
+  $("invSearch").addEventListener("input",renderInvoices);
+  $("invFilterMonth").addEventListener("change",renderInvoices);
+  $("invFilterVendor").addEventListener("change",renderInvoices);
+  $("invFilterCat").addEventListener("change",renderInvoices);
+  $("invClearFilters").onclick=()=>{$("invSearch").value="";$("invFilterMonth").value="";$("invFilterVendor").value="";$("invFilterCat").value="";renderInvoices();};
+  document.querySelectorAll("#invTable th[data-sort]").forEach(th=>th.onclick=()=>{
+    const k=th.dataset.sort; if(invSortKey===k)invSortDir*=-1; else{invSortKey=k;invSortDir=1;} renderInvoices();
+  });
+
+  // exports / backup
+  $("btnExportXlsx").onclick=exportXlsx;
+  $("btnExportCsv").onclick=exportCsv;
+  $("btnBackup").onclick=backup;
+  $("btnRestore").onclick=()=>$("restoreFile").click();
+  $("restoreFile").onchange=e=>{if(e.target.files[0])restore(e.target.files[0]);e.target.value="";};
+  $("btnClearAll").onclick=()=>{
+    if(confirm("Delete ALL entries from this browser? Export or back up first.\n\nThis cannot be undone.")){
+      entries=[];persist();refreshAll();toast("All entries cleared.");
+    }
+  };
+
+  // bulk import
+  deGateInit();
+  $("btnImport").onclick=()=>$("importFile").click();
+  $("importFile").onchange=e=>{if(e.target.files[0])doImport(e.target.files[0]);e.target.value="";};
+  $("btnTemplate").onclick=downloadTemplate;
+
+  showDeState();
+  recalcForm();
+  refreshAll();
+}
+function fillSelect2(sel,opts,blankLabel){
+  sel.innerHTML=`<option value="">${blankLabel}</option>`+opts.map(o=>`<option>${esc(o)}</option>`).join("");
+}
+
+document.addEventListener("DOMContentLoaded",gateInit);
+</script>
+</body>
+</html>
