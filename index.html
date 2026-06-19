@@ -543,6 +543,12 @@
               }
             }
 
+            function hideCommunityCorner() {
+              var section = document.querySelector('[data-testid="events-section"]');
+              if (section) section.style.setProperty('display', 'none', 'important');
+            }
+            setInterval(hideCommunityCorner, 300);
+
             function removeCommitteeSection() {
               /* Target the first committee card; its grandparent is the section container */
               var card = document.querySelector('[data-testid="committee-0"]');
