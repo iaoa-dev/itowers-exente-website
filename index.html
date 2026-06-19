@@ -248,6 +248,63 @@
             border-top: 1px solid #e8e3d8;
             margin: 0 0 2.5rem;
           }
+          /* ── Sponsored section ── */
+          #sponsors-section {
+            font-family: 'Outfit', sans-serif;
+            padding: 5rem 1.5rem;
+            background: #fff;
+            border-top: 1px solid #e8e3d8;
+          }
+          #sponsors-section .sp-inner { max-width: 72rem; margin: 0 auto; }
+          #sponsors-section .sp-header { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2.5rem; }
+          #sponsors-section .sp-eyebrow { font-size: 0.68rem; letter-spacing: 0.2em; font-weight: 600; color: #8a7d5a; display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+          #sponsors-section .sp-eyebrow::before { content:''; display:inline-block; width:1.8rem; height:1px; background:#8a7d5a; }
+          #sponsors-section .sp-heading { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 500; color: #1a1a1a; margin: 0; line-height: 1.2; }
+          #sponsors-section .sp-advertise { font-size: 0.82rem; color: #1A3622; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; cursor: pointer; }
+          #sponsors-section .sp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+          #sponsors-section .sp-card {
+            border: 1.5px solid #e8e3d8; border-radius: 16px; overflow: hidden;
+            background: #faf8f4; transition: box-shadow 0.2s, transform 0.2s;
+            text-decoration: none; color: inherit; display: flex; flex-direction: column;
+          }
+          #sponsors-section .sp-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.09); transform: translateY(-2px); }
+          #sponsors-section .sp-card-img {
+            height: 160px; background: #f0ece3; display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+          }
+          #sponsors-section .sp-card-img img { width: 100%; height: 100%; object-fit: cover; }
+          #sponsors-section .sp-card-img .sp-placeholder {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 100%; height: 100%; background: linear-gradient(135deg, #e8e3d8, #f5f1e8);
+            color: #aaa; font-size: 0.75rem; letter-spacing: 0.1em; gap: 0.5rem;
+          }
+          #sponsors-section .sp-card-img .sp-placeholder svg { opacity: 0.4; }
+          #sponsors-section .sp-badge {
+            position: absolute; top: 10px; right: 10px; font-size: 0.6rem; letter-spacing: 0.12em;
+            font-weight: 700; color: #fff; background: rgba(0,0,0,0.45); padding: 3px 8px;
+            border-radius: 999px; text-transform: uppercase;
+          }
+          #sponsors-section .sp-card-body { padding: 1.25rem 1.25rem 1.5rem; flex: 1; display: flex; flex-direction: column; gap: 0.4rem; }
+          #sponsors-section .sp-card-name { font-size: 1rem; font-weight: 600; color: #1a1a1a; }
+          #sponsors-section .sp-card-tagline { font-size: 0.82rem; color: #666; line-height: 1.5; flex: 1; }
+          #sponsors-section .sp-card-cta {
+            margin-top: 1rem; display: inline-flex; align-items: center; gap: 0.35rem;
+            font-size: 0.8rem; font-weight: 500; color: #1A3622; padding: 0.5rem 1rem;
+            border: 1.5px solid #1A3622; border-radius: 999px; width: fit-content;
+            transition: background 0.2s, color 0.2s;
+          }
+          #sponsors-section .sp-card:hover .sp-card-cta { background: #1A3622; color: #fff; }
+          #sponsors-section .sp-empty {
+            border: 2px dashed #d4cfc4; border-radius: 16px; min-height: 280px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 0.75rem; color: #aaa; font-size: 0.85rem; text-align: center; padding: 2rem;
+            background: #faf8f4;
+          }
+          #sponsors-section .sp-empty-icon { font-size: 2rem; opacity: 0.5; }
+          #sponsors-section .sp-empty strong { color: #888; font-size: 0.9rem; }
+          #sponsors-section .sp-footer { margin-top: 2rem; text-align: center; font-size: 0.82rem; color: #888; }
+          #sponsors-section .sp-footer a { color: #1A3622; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+
           /* Always show solid ivory header — no transparent-over-hero */
           header {
             background-color: rgba(250, 248, 244, 0.97) !important;
@@ -652,6 +709,74 @@
               });
             }
 
+            /* ── Sponsor data — edit this array to add/remove sponsors ── */
+            var SPONSORS = [
+              /* Example — replace with real sponsors:
+              {
+                name: 'Brand Name',
+                tagline: 'Short offer description for residents',
+                cta: 'View Offer',
+                url: 'https://brandwebsite.com',
+                img: 'https://image-url.com/photo.jpg'
+              },
+              */
+            ];
+
+            function injectSponsorsSection() {
+              if (window.location.pathname !== '/' && window.location.pathname !== '') return;
+              if (document.getElementById('sponsors-section')) return;
+              var marquee = document.querySelector('[data-testid="vendor-marquee-section"]');
+              if (!marquee) return;
+
+              var sponsorCards = '';
+              if (SPONSORS.length > 0) {
+                SPONSORS.forEach(function(s) {
+                  var imgHtml = s.img
+                    ? '<img src="' + s.img + '" alt="' + s.name + '" />'
+                    : '<div class="sp-placeholder"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>LOGO</div>';
+                  sponsorCards +=
+                    '<a class="sp-card" href="' + s.url + '" target="_blank" rel="noopener">' +
+                      '<div class="sp-card-img">' + imgHtml + '<span class="sp-badge">Sponsored</span></div>' +
+                      '<div class="sp-card-body">' +
+                        '<div class="sp-card-name">' + s.name + '</div>' +
+                        '<div class="sp-card-tagline">' + s.tagline + '</div>' +
+                        '<div class="sp-card-cta">' + (s.cta || 'View Offer') + ' →</div>' +
+                      '</div>' +
+                    '</a>';
+                });
+              }
+
+              /* Always show 3 "Your brand here" slots if fewer than 3 real sponsors */
+              var emptySlots = Math.max(0, 3 - SPONSORS.length);
+              for (var i = 0; i < emptySlots; i++) {
+                sponsorCards +=
+                  '<div class="sp-empty">' +
+                    '<div class="sp-empty-icon">📣</div>' +
+                    '<strong>Your brand here</strong>' +
+                    '<span>Reach 438+ Exente families with<br>an exclusive residents-only offer.</span>' +
+                  '</div>';
+              }
+
+              var section = document.createElement('section');
+              section.id = 'sponsors-section';
+              section.innerHTML =
+                '<div class="sp-inner">' +
+                  '<div class="sp-header">' +
+                    '<div>' +
+                      '<p class="sp-eyebrow">COMMUNITY SPONSORS</p>' +
+                      '<h2 class="sp-heading">Exclusive deals for Exente residents</h2>' +
+                    '</div>' +
+                    '<a class="sp-advertise" href="mailto:iaoa@itowersexente.com?subject=Advertise%20on%20iTowers%20Exente%20Portal&body=Hi%2C%20I%27d%20like%20to%20know%20more%20about%20advertising%20on%20the%20iTowers%20Exente%20community%20portal.">Advertise here →</a>' +
+                  '</div>' +
+                  '<div class="sp-grid">' + sponsorCards + '</div>' +
+                  '<p class="sp-footer">Interested in reaching Exente residents? <a href="mailto:iaoa@itowersexente.com?subject=Advertise%20on%20iTowers%20Exente%20Portal">Email us</a> to get featured.</p>' +
+                '</div>';
+
+              marquee.insertAdjacentElement('afterend', section);
+            }
+
+            setInterval(injectSponsorsSection, 300);
+
             function patchAmenitiesCreche() {
               if (!window.location.pathname.startsWith('/amenities')) return;
               if (document.querySelector('[data-creche-amenity]')) return;
@@ -693,6 +818,7 @@
                 patchContactForm();
                 removeSentences();
                 removeCommitteeSection();
+                injectSponsorsSection();
                 patchAmenitiesCreche();
                 patchVendorCards();
                 patchNavLocation();
