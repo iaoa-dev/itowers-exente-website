@@ -336,7 +336,7 @@
             ];
 
             /* Card/section titles to remove entirely */
-            var REMOVE_CARD_TITLE = ['EV Charging', 'Sports & Amenities', 'Deepa Krishnan', 'Management Committee'];
+            var REMOVE_CARD_TITLE = ['EV Charging', 'Sports & Amenities', 'Deepa Krishnan'];
 
             function patchTextNodes() {
               var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
@@ -416,6 +416,17 @@
                   }
                   break;
                 }
+              }
+            }
+
+            function removeCommitteeSection() {
+              /* Target the first committee card; its grandparent is the section container */
+              var card = document.querySelector('[data-testid="committee-0"]');
+              if (!card) return;
+              /* card → grid → section wrapper */
+              var section = card.parentElement && card.parentElement.parentElement;
+              if (section) {
+                section.style.setProperty('display', 'none', 'important');
               }
             }
 
@@ -581,6 +592,9 @@
               });
             }
 
+            /* Dedicated interval: hides committee section whenever React re-renders it */
+            setInterval(removeCommitteeSection, 300);
+
             var patching = false;
             var timer = null;
 
@@ -598,6 +612,7 @@
                 patchPolicyLinks();
                 patchContactForm();
                 removeSentences();
+                removeCommitteeSection();
                 patchVendorCards();
                 patchNavLocation();
                 patching = false;
