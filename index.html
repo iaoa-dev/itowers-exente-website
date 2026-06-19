@@ -476,6 +476,12 @@
                 btn.removeAttribute('target');
                 btn.removeAttribute('rel');
                 btn.textContent = 'Residents';
+                btn.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  e.stopImmediatePropagation();
+                  window.history.pushState({}, '', '/residents');
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                }, true);
               }
 
               /* Mobile menu: hide Residents link, change CTA button to Residents */
@@ -494,6 +500,12 @@
                   el.removeAttribute('target');
                   el.removeAttribute('rel');
                   el.textContent = 'Residents';
+                  el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    window.history.pushState({}, '', '/residents');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                  }, true);
                 }
               });
             }
