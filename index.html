@@ -313,6 +313,14 @@
             padding-top: 12px !important;
             padding-bottom: 12px !important;
           }
+          /* Fix amenity cards on mobile — force full width regardless of grid columns */
+          @media (max-width: 767px) {
+            [data-testid^="amenity-card-"],
+            [data-creche-amenity] {
+              grid-column: 1 / -1 !important;
+              height: 220px !important;
+            }
+          }
         </style>
         <script>
           (function () {
