@@ -635,9 +635,9 @@
                   if (offer) offer.textContent = v.tag;
                 });
               });
-              /* Inject Crèche as an extra card into marquee bands (skip outer rfm-marquee wrapper) */
-              document.querySelectorAll('.rfm-initial-child-container, .rfm-marquee').forEach(function(band) {
-                if (band.querySelector('.rfm-initial-child-container')) return; /* skip outer wrapper */
+              /* Inject Crèche only into the source band — the clone picks it up via the loop */
+              document.querySelectorAll('.rfm-initial-child-container').forEach(function(band) {
+                if (false) return; /* placeholder */
                 if (band.querySelector('[data-creche]')) return;
                 var template = band.querySelector('article[data-testid^="vendor-card-"]');
                 if (!template) return;
