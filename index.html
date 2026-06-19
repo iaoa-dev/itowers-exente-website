@@ -316,13 +316,6 @@
                'Visitor parking is on the ground floor, next to the main gate security.'],
               ['Guests are welcome 7:00 AM — 10:00 PM. For overnight stays, your host must inform the management office.',
                'Open 24/7. All visitors must be registered in MyGate for tracking and security.'],
-              /* Management committee names */
-              ['Anita Rao',      'Abhilash Deshpande'],
-              ['Vikram Iyer',    'Shijo Prakash'],
-              ['Priya Menon',    'Sathyan Mani'],
-              ['Karthik Shetty', 'Deepak Kumar Agarwal'],
-              ['Rahul Verma',    'Pranjal Kumar'],
-              ['Cultural Committee', 'Co-Treasurer'],
               /* Residents page */
               ['Need a hand?', 'Need Help?'],
             ];
@@ -343,7 +336,7 @@
             ];
 
             /* Card/section titles to remove entirely */
-            var REMOVE_CARD_TITLE = ['EV Charging', 'Sports & Amenities', 'Deepa Krishnan'];
+            var REMOVE_CARD_TITLE = ['EV Charging', 'Sports & Amenities', 'Deepa Krishnan', 'Management Committee'];
 
             function patchTextNodes() {
               var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
@@ -540,6 +533,8 @@
               });
             }
 
+            var EXTRA_VENDOR = { name: 'Crèche',  category: 'Childcare · In-society', tag: 'Safe & nurturing environment', img: 'https://images.pexels.com/photos/1001914/pexels-photo-1001914.jpeg?auto=compress&cs=tinysrgb&w=400' };
+
             var VENDORS = [
               { name: 'Riri Mart',              category: 'Supermarket',          tag: 'Near Clubhouse entry',         img: 'images/clubhouse.jpg' },
               { name: 'Immanuvel Cleaners',     category: 'Laundry & Dry Clean',  tag: 'Pickup & delivery available',  img: 'https://images.pexels.com/photos/37100665/pexels-photo-37100665.jpeg?auto=compress&cs=tinysrgb&w=400' },
@@ -569,6 +564,20 @@
                   var offer = card.querySelector('span.text-sm');
                   if (offer) offer.textContent = v.tag;
                 });
+              });
+              /* Inject Crèche as an extra card into every marquee band */
+              document.querySelectorAll('.rfm-initial-child-container, .rfm-marquee').forEach(function(band) {
+                if (band.querySelector('[data-creche]')) return;
+                var template = band.querySelector('article[data-testid^="vendor-card-"]');
+                if (!template) return;
+                var clone = template.cloneNode(true);
+                delete clone.dataset.testid;
+                clone.dataset.creche = '1';
+                var img = clone.querySelector('img'); if (img) { img.src = EXTRA_VENDOR.img; img.alt = EXTRA_VENDOR.name; }
+                var cat = clone.querySelector('[class*="uppercase"][class*="tracking"]'); if (cat) cat.textContent = EXTRA_VENDOR.category;
+                var h3 = clone.querySelector('h3'); if (h3) h3.textContent = EXTRA_VENDOR.name;
+                var offer = clone.querySelector('span.text-sm'); if (offer) offer.textContent = EXTRA_VENDOR.tag;
+                band.appendChild(clone);
               });
             }
 
@@ -604,6 +613,16 @@
               observer.observe(document.body, { childList: true, subtree: true });
               setTimeout(schedule, 400);
             });
+            /* Re-run after React Router navigates (pushState doesn't fire popstate) */
+            (function() {
+              var orig = history.pushState.bind(history);
+              history.pushState = function() {
+                orig.apply(history, arguments);
+                setTimeout(schedule, 300);
+                setTimeout(schedule, 700);
+              };
+            })();
+            window.addEventListener('popstate', function() { setTimeout(schedule, 300); });
           })();
         </script>
     </head>
