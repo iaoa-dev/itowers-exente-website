@@ -657,17 +657,16 @@
               if (document.querySelector('[data-creche-amenity]')) return;
               var grid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-12');
               if (!grid) return;
-              var template = grid.querySelector('article[data-testid^="amenity-card-"]');
-              if (!template) return;
               var card = document.createElement('article');
               card.setAttribute('data-creche-amenity', '1');
-              card.className = 'relative group overflow-hidden rounded-2xl border border-brand-sage bg-brand-sage/30 md:col-span-4';
+              card.className = 'relative group overflow-hidden rounded-2xl border border-brand-sage bg-brand-sage/30 md:col-span-12';
+              card.style.minHeight = '240px';
               card.innerHTML =
                 '<img src="https://images.pexels.com/photos/1001914/pexels-photo-1001914.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Crèche" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />' +
-                '<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>' +
-                '<div class="relative p-6 flex flex-col justify-end h-full min-h-[200px]">' +
-                  '<h3 class="font-display text-2xl text-white mb-1">Crèche</h3>' +
-                  '<p class="text-white/80 text-sm">Safe, nurturing childcare within the community</p>' +
+                '<div class="absolute inset-0 bg-gradient-to-t from-brand-forest/90 via-brand-forest/30 to-transparent"></div>' +
+                '<div class="relative h-full flex flex-col justify-end p-6 md:p-8">' +
+                  '<h3 class="font-display text-2xl md:text-3xl text-brand-ivory">Crèche</h3>' +
+                  '<p class="text-sm text-brand-ivory/85 mt-2 max-w-md leading-relaxed">Safe, nurturing childcare within the community</p>' +
                 '</div>';
               grid.appendChild(card);
             }
