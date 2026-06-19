@@ -387,15 +387,22 @@
                   while (card && card.parentElement && card.parentElement.children.length < 2) {
                     card = card.parentElement;
                   }
-                  if (card && !card.querySelector('.sop-link')) {
-                    var link = document.createElement('a');
-                    link.className = 'sop-link';
-                    link.href = '/sops/move-in-move-out.html';
-                    link.textContent = 'View full SOP →';
-                    link.style.cssText = 'display:inline-flex;align-items:center;margin-top:0.85rem;font-size:0.8rem;font-weight:600;color:#1A3622;text-decoration:none;border:1.5px solid #1A3622;border-radius:999px;padding:0.3rem 0.85rem;transition:background 0.2s,color 0.2s;';
-                    link.onmouseenter = function() { this.style.background='#1A3622'; this.style.color='#FAF8F4'; };
-                    link.onmouseleave = function() { this.style.background=''; this.style.color='#1A3622'; };
-                    card.appendChild(link);
+                  if (card && !card.dataset.sopPatched) {
+                    card.dataset.sopPatched = '1';
+                    card.style.cssText += 'cursor:pointer;transition:box-shadow 0.2s,transform 0.2s;';
+                    card.addEventListener('mouseenter', function() {
+                      this.style.boxShadow = '0 4px 20px rgba(26,54,34,0.15)';
+                      this.style.transform = 'translateY(-2px)';
+                    });
+                    card.addEventListener('mouseleave', function() {
+                      this.style.boxShadow = '';
+                      this.style.transform = '';
+                    });
+                    card.addEventListener('click', function(e) {
+                      if (!e.target.closest('a')) {
+                        window.location.href = '/sops/move-in-move-out.html';
+                      }
+                    });
                   }
                   break;
                 }
