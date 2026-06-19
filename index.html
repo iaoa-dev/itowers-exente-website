@@ -363,6 +363,31 @@
               });
             }
 
+            function patchPolicyLinks() {
+              var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+              var node;
+              while ((node = walker.nextNode())) {
+                if (node.textContent.trim() === 'Move-in / Move-out') {
+                  var card = node.parentElement;
+                  /* Walk up to the card container */
+                  while (card && card.parentElement && card.parentElement.children.length < 2) {
+                    card = card.parentElement;
+                  }
+                  if (card && !card.querySelector('.sop-link')) {
+                    var link = document.createElement('a');
+                    link.className = 'sop-link';
+                    link.href = '/sops/move-in-move-out.html';
+                    link.textContent = 'View full SOP →';
+                    link.style.cssText = 'display:inline-flex;align-items:center;margin-top:0.85rem;font-size:0.8rem;font-weight:600;color:#1A3622;text-decoration:none;border:1.5px solid #1A3622;border-radius:999px;padding:0.3rem 0.85rem;transition:background 0.2s,color 0.2s;';
+                    link.onmouseenter = function() { this.style.background='#1A3622'; this.style.color='#FAF8F4'; };
+                    link.onmouseleave = function() { this.style.background=''; this.style.color='#1A3622'; };
+                    card.appendChild(link);
+                  }
+                  break;
+                }
+              }
+            }
+
             function patchContactForm() {
               var form = document.querySelector('[data-testid="contact-form"]');
               if (!form || form._mailtoPatched) return;
@@ -426,6 +451,7 @@
                 patchEmailHrefs();
                 removeLiItems();
                 removeCards();
+                patchPolicyLinks();
                 patchContactForm();
                 patching = false;
               }, 120);
