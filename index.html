@@ -778,7 +778,8 @@
             setInterval(injectSponsorsSection, 300);
 
             function patchAmenitiesCreche() {
-              if (!window.location.pathname.startsWith('/amenities')) return;
+              var path = window.location.pathname;
+              if (path !== '/' && path !== '' && !path.startsWith('/amenities')) return;
               if (document.querySelector('[data-creche-amenity]')) return;
               var grid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-12');
               if (!grid) return;
