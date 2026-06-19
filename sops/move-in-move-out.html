@@ -28,32 +28,58 @@
       line-height: 1.6;
     }
 
-    /* ── Top bar ── */
-    .topbar {
-      background: var(--forest);
-      padding: 0.75rem 1.5rem;
+    /* ── Site header ── */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(250, 248, 244, 0.97);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(100, 120, 100, 0.2);
+      padding: 12px 1.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .topbar a {
-      color: rgba(250,248,244,0.75);
-      text-decoration: none;
-      font-size: 0.82rem;
-      font-weight: 500;
-      letter-spacing: 0.04em;
+    .site-header .logo-link {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
-      transition: color 0.2s;
+      text-decoration: none;
     }
-    .topbar a:hover { color: var(--ivory); }
-    .topbar-brand {
-      font-family: 'Cormorant Garamond', serif;
-      color: var(--ivory);
-      font-size: 1rem;
+    .site-header .logo-link img {
+      height: 44px;
+      width: auto;
+    }
+    .site-header nav {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .site-header nav a {
+      font-size: 0.82rem;
       font-weight: 500;
-      letter-spacing: 0.05em;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: 0.03em;
+      opacity: 0.75;
+      transition: opacity 0.2s;
+    }
+    .site-header nav a:hover { opacity: 1; }
+    .site-header .back-crumb {
+      font-size: 0.78rem;
+      color: var(--mute);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .site-header .back-crumb a {
+      color: var(--forest);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .site-header .back-crumb a:hover { text-decoration: underline; }
+    @media (max-width: 680px) {
+      .site-header nav { display: none; }
     }
 
     /* ── Page wrapper ── */
@@ -295,16 +321,24 @@
 
     @media (max-width: 600px) {
       .section-body { padding-left: 0; margin-top: 0.5rem; }
-      .topbar-brand { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <div class="topbar">
-    <a href="/residents">← Back to Residents</a>
-    <span class="topbar-brand">iTowers Exente</span>
-  </div>
+  <header class="site-header">
+    <a class="logo-link" href="/">
+      <img src="../black_logo.png" alt="iTowers Exente" />
+    </a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/residents">Residents</a>
+      <a href="/visitors">Visitors</a>
+      <a href="/amenities">Amenities</a>
+      <a href="/policies">Policies</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </header>
 
   <div class="page">
 
@@ -343,9 +377,9 @@
             <div class="note">Refundable after damage verification</div>
           </div>
           <div class="charge-card">
-            <div class="label">Total Due at Move</div>
+            <div class="label">Total</div>
             <div class="amount">₹7,500</div>
-            <div class="note">Paid to Facility Manager before start</div>
+            <div class="note">Fee via MyGate + deposit to FM</div>
           </div>
         </div>
       </div>
@@ -391,12 +425,13 @@
       </div>
       <div class="section-body">
         <ul class="rule-list">
-          <li>Pay the combined amount of <strong>₹7,500</strong> (₹2,500 fee + ₹5,000 deposit) directly to the Facility Manager before the move begins.</li>
-          <li>The FM will issue a physical or digital receipt as proof of payment.</li>
+          <li>The <strong>Move-In / Move-Out fee of ₹2,500</strong> is paid online via <strong>MyGate</strong> before the move begins.</li>
+          <li>The <strong>security deposit of ₹5,000</strong> is paid directly to the <strong>Facility Manager</strong> in cash or bank transfer before the move begins.</li>
+          <li>The FM will issue a receipt for the deposit as proof of payment.</li>
         </ul>
         <div class="highlight-row">
           <span class="icon">📱</span>
-          <span><strong>Coming soon:</strong> Once the Move-In / Move-Out module is enabled on MyGate, payments will shift to the online system. Residents will be notified.</span>
+          <span>Complete the MyGate payment first, then coordinate with the FM to hand over the deposit. Keep both receipts until the deposit is refunded.</span>
         </div>
       </div>
     </div>
