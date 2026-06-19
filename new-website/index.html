@@ -14,46 +14,43 @@
         <title>iTowers Exente — A community in the heart of Electronic City</title>
         <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
         <script>
-          /* Strip /new-website prefix so React Router routes match correctly */
-          (function () {
-            var base = '/new-website';
-            var path = window.location.pathname;
-            if (path.startsWith(base)) {
-              var newPath = path.slice(base.length).replace(/^\/index\.html$/, '') || '/';
-              window.history.replaceState({}, '', newPath + window.location.search + window.location.hash);
-            }
+          /* Detect asset base path before any URL changes (works for /new-website/ deploy AND localhost) */
+          window.__SITE_BASE = (function () {
+            var p = window.location.pathname;
+            return p.startsWith('/new-website') ? '/new-website' : '';
           })();
         </script>
         <script defer src="static/js/bundle.js"></script>
         <script>
           (function () {
+            var B = (window.__SITE_BASE || '') + '/';
             var IMAGE_MAP = {
               /* Hero & exterior */
-              "iTowers Exente at golden hour": "images/overview.jpg",
-              "Exente exterior":               "images/exterior3.jpg",
-              "Gardens":                       "images/gardens.jpg",
-              "Pool":                          "images/pool.jpg",
-              "Clubhouse":                     "images/clubhouse.jpg",
+              "iTowers Exente at golden hour": B + "images/overview.jpg",
+              "Exente exterior":               B + "images/exterior3.jpg",
+              "Gardens":                       B + "images/gardens.jpg",
+              "Pool":                          B + "images/pool.jpg",
+              "Clubhouse":                     B + "images/clubhouse.jpg",
               /* Amenities */
-              "Rooftop Infinity Pool":         "images/rooftop_pool.jpg",
-              "Aristotle Digital Library":     "images/billiards.jpg",
-              "Clubhouse & Banquet":           "images/clubhouse.jpg",
-              "Landscaped Gardens":            "images/gardens2.jpg",
-              "Tennis & Basketball Courts":    "images/tennis.jpg",
-              "State-of-the-art Gym":          "images/gym.jpg",
-              "Kids' Play Zone & Pool":        "images/kids_play.jpg",
-              "Jogging Track & Party Lawn":    "images/aerial.jpg",
+              "Rooftop Infinity Pool":         B + "images/rooftop_pool.jpg",
+              "Aristotle Digital Library":     B + "images/billiards.jpg",
+              "Clubhouse & Banquet":           B + "images/clubhouse.jpg",
+              "Landscaped Gardens":            B + "images/gardens2.jpg",
+              "Tennis & Basketball Courts":    B + "images/tennis.jpg",
+              "State-of-the-art Gym":          B + "images/gym.jpg",
+              "Kids' Play Zone & Pool":        B + "images/kids_play.jpg",
+              "Jogging Track & Party Lawn":    B + "images/aerial.jpg",
               /* Community events — use real society images */
-              "Republic Day Carnival":         "images/entrance3.jpg",
-              "Holi at Exente":                "images/view.jpg",
-              "Summer Swim Camp":              "images/pool.jpg"
+              "Republic Day Carnival":         B + "images/entrance3.jpg",
+              "Holi at Exente":                B + "images/view.jpg",
+              "Summer Swim Camp":              B + "images/pool.jpg"
             };
 
             function replaceImages() {
               document.querySelectorAll('img').forEach(function (img) {
                 var replacement = IMAGE_MAP[img.alt];
-                if (replacement && img.src.indexOf(replacement) === -1 &&
-                    !img.src.startsWith('http://localhost:8765/images/')) {
+                if (replacement && img.src !== replacement &&
+                    img.src.indexOf('/images/') === -1) {
                   img.src = replacement;
                 }
               });
@@ -197,7 +194,7 @@
 
               link.innerHTML = '';
               var img = document.createElement('img');
-              img.src = 'black_logo.png';
+              img.src = (window.__SITE_BASE || '') + '/black_logo.png';
               img.alt = 'iTowers Exente';
               img.className = 'nav-logo-img';
               link.appendChild(img);
