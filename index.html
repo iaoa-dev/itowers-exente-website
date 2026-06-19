@@ -663,10 +663,10 @@
               card.style.minHeight = '240px';
               card.innerHTML =
                 '<img src="https://images.pexels.com/photos/1001914/pexels-photo-1001914.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Crèche" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />' +
-                '<div class="absolute inset-0 bg-gradient-to-t from-brand-forest/90 via-brand-forest/30 to-transparent"></div>' +
+                '<div class="absolute inset-0" style="background:linear-gradient(to top,rgba(26,54,34,0.9),rgba(26,54,34,0.3),transparent)"></div>' +
                 '<div class="relative h-full flex flex-col justify-end p-6 md:p-8">' +
-                  '<h3 class="font-display text-2xl md:text-3xl text-brand-ivory">Crèche</h3>' +
-                  '<p class="text-sm text-brand-ivory/85 mt-2 max-w-md leading-relaxed">Safe, nurturing childcare within the community</p>' +
+                  '<h3 class="font-display text-2xl md:text-3xl" style="color:#FAF8F4">Crèche</h3>' +
+                  '<p class="text-sm mt-2 max-w-md leading-relaxed" style="color:rgba(250,248,244,0.85)">Safe, nurturing childcare within the community</p>' +
                 '</div>';
               grid.appendChild(card);
             }
