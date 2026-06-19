@@ -11,8 +11,8 @@
             href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap"
             rel="stylesheet"
         />
-        <link rel="icon" type="image/png" href="/black_logo.png" />
-        <link rel="apple-touch-icon" href="/black_logo.png" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="apple-touch-icon" href="/favicon.png" />
         <title>iTowers Exente — A community in the heart of Electronic City</title>
         <script>
           // Restore path after GitHub Pages 404.html redirect
@@ -461,25 +461,39 @@
             }
 
             function patchNavLocation() {
-              var MAP_URL = 'https://maps.app.goo.gl/xyd9uxx1kbVx7zqr5';
-              var ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256" style="margin-right:6px;flex-shrink:0"><path d="M128,16a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,16Zm0,40a40,40,0,1,1-40,40A40,40,0,0,1,128,56Zm0,144a88.18,88.18,0,0,1-67.16-31.25C75.28,155.2,99.83,144,128,144s52.72,11.2,67.16,28.75A88.18,88.18,0,0,1,128,200Z"></path></svg>';
-              /* Desktop nav button */
-              var btn = document.querySelector('[data-testid="nav-visitor-pass-btn"]');
-              if (btn && !btn.dataset.locationPatched) {
-                btn.dataset.locationPatched = '1';
-                btn.href = MAP_URL;
-                btn.target = '_blank';
-                btn.rel = 'noopener noreferrer';
-                btn.innerHTML = ICON + 'Location';
+              /* Remove Residents link from nav */
+              var resNav = document.querySelector('[data-testid="nav-link-residents"]');
+              if (resNav && !resNav.dataset.hiddenByPatch) {
+                resNav.dataset.hiddenByPatch = '1';
+                resNav.style.display = 'none';
               }
-              /* Mobile menu button — no testid, identified by text */
-              document.querySelectorAll('a[href="/visitors"]').forEach(function(el) {
-                if (el.textContent.trim() === 'Visitor Pass' && !el.dataset.locationPatched) {
-                  el.dataset.locationPatched = '1';
-                  el.href = MAP_URL;
-                  el.target = '_blank';
-                  el.rel = 'noopener noreferrer';
-                  el.innerHTML = ICON + 'Location';
+
+              /* Top-right button → Residents */
+              var btn = document.querySelector('[data-testid="nav-visitor-pass-btn"]');
+              if (btn && !btn.dataset.residentPatched) {
+                btn.dataset.residentPatched = '1';
+                btn.href = '/residents';
+                btn.removeAttribute('target');
+                btn.removeAttribute('rel');
+                btn.textContent = 'Residents';
+              }
+
+              /* Mobile menu: hide Residents link, change CTA button to Residents */
+              document.querySelectorAll('a[href="/residents"]').forEach(function(el) {
+                /* Mobile menu nav link (plain text "Residents") */
+                if (el.dataset.testid === 'nav-link-residents' || (el.textContent.trim() === 'Residents' && !el.dataset.residentPatched && el !== btn)) {
+                  el.dataset.hiddenByPatch = '1';
+                  el.style.display = 'none';
+                }
+              });
+              /* Mobile CTA only — identified by its rounded-full forest background style in the mobile menu */
+              document.querySelectorAll('a[href="/visitors"], a[href="https://maps.app.goo.gl/xyd9uxx1kbVx7zqr5"]').forEach(function(el) {
+                if (!el.dataset.residentPatched && el !== btn && el.className.indexOf('rounded-full') !== -1 && el.className.indexOf('bg-brand-forest') !== -1) {
+                  el.dataset.residentPatched = '1';
+                  el.href = '/residents';
+                  el.removeAttribute('target');
+                  el.removeAttribute('rel');
+                  el.textContent = 'Residents';
                 }
               });
             }
