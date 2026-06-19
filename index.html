@@ -460,6 +460,16 @@
               });
             }
 
+            function patchNavLocation() {
+              var btn = document.querySelector('[data-testid="nav-visitor-pass-btn"]');
+              if (!btn || btn.dataset.locationPatched) return;
+              btn.dataset.locationPatched = '1';
+              btn.href = 'https://maps.app.goo.gl/xyd9uxx1kbVx7zqr5';
+              btn.target = '_blank';
+              btn.rel = 'noopener noreferrer';
+              btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256" style="margin-right:6px;flex-shrink:0"><path d="M128,16a96,96,0,1,0,96,96A96.11,96.11,0,0,0,128,16Zm0,40a40,40,0,1,1-40,40A40,40,0,0,1,128,56Zm0,144a88.18,88.18,0,0,1-67.16-31.25C75.28,155.2,99.83,144,128,144s52.72,11.2,67.16,28.75A88.18,88.18,0,0,1,128,200Z"></path></svg>Location';
+            }
+
             var VENDORS = [
               { name: 'Riri Mart',              category: 'Supermarket',          tag: 'Near Clubhouse entry',         img: 'images/clubhouse.jpg' },
               { name: 'Immanuvel Cleaners',     category: 'Laundry & Dry Clean',  tag: 'Pickup & delivery available',  img: 'https://images.pexels.com/photos/37100665/pexels-photo-37100665.jpeg?auto=compress&cs=tinysrgb&w=400' },
@@ -509,6 +519,7 @@
                 patchPolicyLinks();
                 patchContactForm();
                 patchVendorCards();
+                patchNavLocation();
                 patching = false;
               }, 120);
             }
