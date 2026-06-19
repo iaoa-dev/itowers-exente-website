@@ -282,6 +282,8 @@
               /* Footer contact */
               ['Management Office',          'BOM Contact Details'],
               ['Mon — Sat \xb7 9:30 AM — 6:00 PM', 'iaoa@itowersexente.com'],
+              /* Email update */
+              ['hello@itowersexente.in', 'iaoa@itowersexente.com'],
               /* Visitors page */
               ['Towers are labelled T1 — T5 (anti-clockwise from the main gate). Internal signage will guide you to lifts and amenities.',
                'Towers are labelled A to E. Internal signage will guide you to lifts and amenities.'],
@@ -310,7 +312,7 @@
             ];
 
             /* Card/section titles to remove entirely */
-            var REMOVE_CARD_TITLE = ['EV Charging', 'Sports & Amenities'];
+            var REMOVE_CARD_TITLE = ['EV Charging', 'Sports & Amenities', 'Deepa Krishnan'];
 
             function patchTextNodes() {
               var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
@@ -329,9 +331,57 @@
             function removePhone() {
               document.querySelectorAll('a, span, p, div').forEach(function (el) {
                 if (el.children.length === 0 && el.textContent.trim() === '+91 80 0000 0000') {
-                  el.remove();
+                  var parent = el.parentElement;
+                  if (parent && parent.children.length <= 3) parent.remove();
+                  else el.remove();
                 }
               });
+              document.querySelectorAll('a[href^="tel:"]').forEach(function (a) {
+                var parent = a.parentElement;
+                if (parent && parent.children.length <= 3) parent.remove();
+                else a.remove();
+              });
+            }
+
+            function removeWhatsApp() {
+              var wp = document.querySelector('[data-testid="contact-whatsapp"]');
+              if (wp) {
+                var parent = wp.parentElement;
+                if (parent && parent.children.length <= 2) parent.remove();
+                else wp.remove();
+              }
+              document.querySelectorAll('a[href*="wa.me"]').forEach(function (a) {
+                var parent = a.parentElement;
+                if (parent && parent.children.length <= 2) parent.remove();
+                else a.remove();
+              });
+            }
+
+            function patchEmailHrefs() {
+              document.querySelectorAll('a[href*="hello@itowersexente"]').forEach(function (a) {
+                a.href = 'mailto:iaoa@itowersexente.com';
+              });
+            }
+
+            function patchContactForm() {
+              var form = document.querySelector('[data-testid="contact-form"]');
+              if (!form || form._mailtoPatched) return;
+              form._mailtoPatched = true;
+              form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                var name    = (form.querySelector('input[type="text"]')  || {}).value || '';
+                var email   = (form.querySelector('input[type="email"]') || {}).value || '';
+                var subject = '';
+                form.querySelectorAll('input[type="text"]').forEach(function (inp, i) {
+                  if (i === 1) subject = inp.value;
+                });
+                var message = (form.querySelector('textarea') || {}).value || '';
+                var body = (name ? 'From: ' + name + ' (' + email + ')\n\n' : '') + message;
+                window.location.href = 'mailto:iaoa@itowersexente.com'
+                  + '?subject=' + encodeURIComponent(subject || 'Website Enquiry')
+                  + '&body='    + encodeURIComponent(body);
+              }, true);
             }
 
             function removeLiItems() {
@@ -372,8 +422,11 @@
                 patching = true;
                 patchTextNodes();
                 removePhone();
+                removeWhatsApp();
+                patchEmailHrefs();
                 removeLiItems();
                 removeCards();
+                patchContactForm();
                 patching = false;
               }, 120);
             }
