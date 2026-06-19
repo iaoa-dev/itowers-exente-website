@@ -25,13 +25,13 @@
               "Clubhouse":                     "images/clubhouse.jpg",
               /* Amenities */
               "Rooftop Infinity Pool":         "images/rooftop_pool.jpg",
-              "Aristotle Digital Library":     "images/billiards.jpg",
-              "Clubhouse & Banquet":           "images/clubhouse.jpg",
-              "Landscaped Gardens":            "images/gardens2.jpg",
+              "Aristotle Digital Library":     "images/lounge.jpg",
+              "Clubhouse & Banquet":           "images/lounge.jpg",
+              "Landscaped Gardens":            "images/gardens.jpg",
               "Tennis & Basketball Courts":    "images/tennis.jpg",
               "State-of-the-art Gym":          "images/gym.jpg",
               "Kids' Play Zone & Pool":        "images/kids_play.jpg",
-              "Jogging Track & Party Lawn":    "images/aerial.jpg",
+              "Jogging Track & Party Lawn":    "images/pergola.jpg",
               /* Community events — use real society images */
               "Republic Day Carnival":         "images/entrance3.jpg",
               "Holi at Exente":                "images/view.jpg",
@@ -273,6 +273,120 @@
                 injectSection();
               }
             }, 300);
+          })();
+        </script>
+        <script>
+          /* ── Content patches: text, removals, name updates ── */
+          (function () {
+            var TEXT_MAP = [
+              /* Footer contact */
+              ['Management Office',          'BOM Contact Details'],
+              ['Mon — Sat \xb7 9:30 AM — 6:00 PM', 'iaoa@itowersexente.com'],
+              /* Visitors page */
+              ['Towers are labelled T1 — T5 (anti-clockwise from the main gate). Internal signage will guide you to lifts and amenities.',
+               'Towers are labelled A to E. Internal signage will guide you to lifts and amenities.'],
+              ['Visitor parking is on Level B1, right after the security barrier. Spaces marked yellow are reserved for guests.',
+               'Visitor parking is on the ground floor, next to the main gate security.'],
+              ['Guests are welcome 7:00 AM — 10:00 PM. For overnight stays, your host must inform the management office.',
+               'Open 24/7. All visitors must be registered in MyGate for tracking and security.'],
+              /* Management committee names */
+              ['Anita Rao',      'Abhilash Deshpande'],
+              ['Vikram Iyer',    'Shijo Prakash'],
+              ['Priya Menon',    'Sathyan Mani'],
+              ['Karthik Shetty', 'Deepak Kumar Agarwal'],
+              ['Rahul Verma',    'Pranjal Kumar'],
+              ['Cultural Committee', 'Co-Treasurer'],
+            ];
+
+            /* Li text to remove entirely */
+            var REMOVE_LI = [
+              'Pay your one-time clubhouse activation',
+              'Pick up your welcome kit',
+              'Schedule water, gas and electricity meter readings',
+              'Quiet hours: 10:00 PM',
+              'Six shared EV chargers',
+              'Booking via management WhatsApp group',
+              'Personal EV points permitted',
+            ];
+
+            /* Card/section titles to remove entirely */
+            var REMOVE_CARD_TITLE = ['EV Charging', 'Sports & Amenities'];
+
+            function patchTextNodes() {
+              var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+              var node;
+              while ((node = walker.nextNode())) {
+                var t = node.textContent;
+                for (var i = 0; i < TEXT_MAP.length; i++) {
+                  if (t.indexOf(TEXT_MAP[i][0]) !== -1) {
+                    node.textContent = t.replace(TEXT_MAP[i][0], TEXT_MAP[i][1]);
+                    t = node.textContent;
+                  }
+                }
+              }
+            }
+
+            function removePhone() {
+              document.querySelectorAll('a, span, p, div').forEach(function (el) {
+                if (el.children.length === 0 && el.textContent.trim() === '+91 80 0000 0000') {
+                  el.remove();
+                }
+              });
+            }
+
+            function removeLiItems() {
+              document.querySelectorAll('li').forEach(function (li) {
+                var t = li.textContent;
+                for (var i = 0; i < REMOVE_LI.length; i++) {
+                  if (t.indexOf(REMOVE_LI[i]) !== -1) { li.remove(); return; }
+                }
+              });
+            }
+
+            function removeCards() {
+              REMOVE_CARD_TITLE.forEach(function (title) {
+                /* Find a text node whose trimmed content exactly matches the title */
+                var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+                var node;
+                while ((node = walker.nextNode())) {
+                  if (node.textContent.trim() === title) {
+                    /* Walk up to find a removable card — first ancestor that has siblings */
+                    var el = node.parentElement;
+                    while (el && el.parentElement && el.parentElement.children.length < 2) {
+                      el = el.parentElement;
+                    }
+                    if (el) el.remove();
+                    break;
+                  }
+                }
+              });
+            }
+
+            var patching = false;
+            var timer = null;
+
+            function schedule() {
+              if (timer) clearTimeout(timer);
+              timer = setTimeout(function () {
+                if (patching) return;
+                patching = true;
+                patchTextNodes();
+                removePhone();
+                removeLiItems();
+                removeCards();
+                patching = false;
+              }, 120);
+            }
+
+            var observer = new MutationObserver(function () {
+              if (!patching) schedule();
+            });
+
+            /* document.body is null while <head> scripts run — defer until DOM ready */
+            document.addEventListener('DOMContentLoaded', function () {
+              observer.observe(document.body, { childList: true, subtree: true });
+              setTimeout(schedule, 400);
+            });
           })();
         </script>
     </head>
