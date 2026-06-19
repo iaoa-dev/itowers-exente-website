@@ -458,6 +458,38 @@
               });
             }
 
+            var VENDORS = [
+              { name: 'Riri Mart',              category: 'Supermarket',        tag: 'Ground floor, Tower A gate', img: 'images/entrance3.jpg' },
+              { name: 'Immanuvel Cleaners',     category: 'Laundry & Dry Clean', tag: 'Pickup & delivery available', img: 'images/lounge.jpg' },
+              { name: 'Gym Personal Trainers',  category: 'Fitness · In-society', tag: 'One-on-one sessions', img: 'images/gym.jpg' },
+              { name: 'Squash Trainers',        category: 'Sports · In-society', tag: 'Group & individual coaching', img: 'images/tennis.jpg' },
+              { name: 'Music Classes',          category: 'Classes · In-society', tag: 'All instruments & vocals', img: 'images/clubhouse.jpg' },
+              { name: 'Dance Classes',          category: 'Classes · In-society', tag: 'Bollywood, classical & more', img: 'images/clubhouse.jpg' },
+              { name: 'Yoga Classes',           category: 'Wellness · In-society', tag: 'Morning & evening batches', img: 'images/gardens.jpg' },
+              { name: 'Football',               category: 'Sports · In-society', tag: 'Weekend matches & coaching', img: 'images/pergola.jpg' },
+              { name: 'Basketball',             category: 'Sports · In-society', tag: 'Open court & coaching', img: 'images/tennis.jpg' },
+              { name: 'Tennis',                 category: 'Sports · In-society', tag: 'Court bookings via FM', img: 'images/tennis.jpg' },
+              { name: 'Skating',                category: 'Sports · In-society', tag: 'Kids & adults welcome', img: 'images/kids_play.jpg' },
+              { name: 'Cricket',                category: 'Sports · In-society', tag: 'Practice nets available', img: 'images/gardens.jpg' },
+            ];
+
+            function patchVendorCards() {
+              VENDORS.forEach(function(v, i) {
+                document.querySelectorAll('[data-testid="vendor-card-' + i + '"]').forEach(function(card) {
+                  if (card.dataset.vendorPatched === v.name) return;
+                  card.dataset.vendorPatched = v.name;
+                  var img = card.querySelector('img');
+                  if (img) { img.src = v.img; img.alt = v.name; }
+                  var cat = card.querySelector('div.text-\\[11px\\]') || card.querySelector('[class*="uppercase"][class*="tracking"]');
+                  if (cat) cat.textContent = v.category;
+                  var h3 = card.querySelector('h3');
+                  if (h3) h3.textContent = v.name;
+                  var offer = card.querySelector('span.text-sm');
+                  if (offer) offer.textContent = v.tag;
+                });
+              });
+            }
+
             var patching = false;
             var timer = null;
 
@@ -474,6 +506,7 @@
                 removeCards();
                 patchPolicyLinks();
                 patchContactForm();
+                patchVendorCards();
                 patching = false;
               }, 120);
             }
