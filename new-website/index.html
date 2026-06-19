@@ -13,6 +13,17 @@
         />
         <title>iTowers Exente — A community in the heart of Electronic City</title>
         <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
+        <script>
+          /* Strip /new-website prefix so React Router routes match correctly */
+          (function () {
+            var base = '/new-website';
+            var path = window.location.pathname;
+            if (path.startsWith(base)) {
+              var newPath = path.slice(base.length).replace(/^\/index\.html$/, '') || '/';
+              window.history.replaceState({}, '', newPath + window.location.search + window.location.hash);
+            }
+          })();
+        </script>
         <script defer src="static/js/bundle.js"></script>
         <script>
           (function () {
