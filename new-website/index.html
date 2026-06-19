@@ -14,6 +14,268 @@
         <title>iTowers Exente — A community in the heart of Electronic City</title>
         <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
         <script defer src="static/js/bundle.js"></script>
+        <script>
+          (function () {
+            var IMAGE_MAP = {
+              /* Hero & exterior */
+              "iTowers Exente at golden hour": "images/overview.jpg",
+              "Exente exterior":               "images/exterior3.jpg",
+              "Gardens":                       "images/gardens.jpg",
+              "Pool":                          "images/pool.jpg",
+              "Clubhouse":                     "images/clubhouse.jpg",
+              /* Amenities */
+              "Rooftop Infinity Pool":         "images/rooftop_pool.jpg",
+              "Aristotle Digital Library":     "images/billiards.jpg",
+              "Clubhouse & Banquet":           "images/clubhouse.jpg",
+              "Landscaped Gardens":            "images/gardens2.jpg",
+              "Tennis & Basketball Courts":    "images/tennis.jpg",
+              "State-of-the-art Gym":          "images/gym.jpg",
+              "Kids' Play Zone & Pool":        "images/kids_play.jpg",
+              "Jogging Track & Party Lawn":    "images/aerial.jpg",
+              /* Community events — use real society images */
+              "Republic Day Carnival":         "images/entrance3.jpg",
+              "Holi at Exente":                "images/view.jpg",
+              "Summer Swim Camp":              "images/pool.jpg"
+            };
+
+            function replaceImages() {
+              document.querySelectorAll('img').forEach(function (img) {
+                var replacement = IMAGE_MAP[img.alt];
+                if (replacement && img.src.indexOf(replacement) === -1 &&
+                    !img.src.startsWith('http://localhost:8765/images/')) {
+                  img.src = replacement;
+                }
+              });
+            }
+
+            var interval = setInterval(function () {
+              replaceImages();
+            }, 200);
+
+            // Stop polling after 10s — MutationObserver takes over
+            setTimeout(function () {
+              clearInterval(interval);
+              var observer = new MutationObserver(replaceImages);
+              observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
+            }, 10000);
+          })();
+        </script>
+        <style>
+          [data-testid="nav-logo"] { gap: 0 !important; }
+          [data-testid="nav-logo"] .nav-logo-img {
+            height: 44px;
+            width: auto;
+            display: block;
+          }
+          /* Internal Details section */
+          #internal-details-section {
+            font-family: 'Outfit', sans-serif;
+            max-width: 72rem;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 1rem;
+          }
+          #internal-details-section .id-eyebrow {
+            font-size: 0.7rem;
+            letter-spacing: 0.18em;
+            color: #8a7d5a;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+          }
+          #internal-details-section .id-eyebrow::before {
+            content: '';
+            display: inline-block;
+            width: 2rem;
+            height: 1px;
+            background: #8a7d5a;
+          }
+          #internal-details-section h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin: 0 0 0.5rem;
+          }
+          #internal-details-section .id-subtitle {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+          }
+          #internal-details-section .id-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+          }
+          #internal-details-section .id-card {
+            background: #fff;
+            border: 1px solid #e8e3d8;
+            border-radius: 12px;
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            transition: box-shadow 0.2s, border-color 0.2s;
+          }
+          #internal-details-section .id-card:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-color: #c8b97a;
+          }
+          #internal-details-section .id-card-icon {
+            font-size: 1.6rem;
+            margin-bottom: 0.25rem;
+          }
+          #internal-details-section .id-card-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #1a1a1a;
+          }
+          #internal-details-section .id-card-desc {
+            font-size: 0.85rem;
+            color: #777;
+            line-height: 1.5;
+            flex: 1;
+          }
+          #internal-details-section .id-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+            padding: 0.55rem 1.1rem;
+            background: #1A3622;
+            color: #fff;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background 0.2s;
+            width: fit-content;
+          }
+          #internal-details-section .id-btn:hover { background: #2a5035; }
+          #internal-details-section .id-btn.outline {
+            background: transparent;
+            color: #1A3622;
+            border: 1.5px solid #1A3622;
+          }
+          #internal-details-section .id-btn.outline:hover { background: #f0f5f1; }
+          #internal-details-section .id-divider {
+            border: none;
+            border-top: 1px solid #e8e3d8;
+            margin: 0 0 2.5rem;
+          }
+          /* Always show solid ivory header — no transparent-over-hero */
+          header {
+            background-color: rgba(250, 248, 244, 0.97) !important;
+            backdrop-filter: blur(12px) !important;
+            border-bottom: 1px solid rgba(100, 120, 100, 0.2) !important;
+            padding-top: 12px !important;
+            padding-bottom: 12px !important;
+          }
+        </style>
+        <script>
+          (function () {
+            var injected = null;
+
+            function injectLogo() {
+              var link = document.querySelector('[data-testid="nav-logo"]');
+              if (!link) return false;
+              if (link === injected) return true;
+              injected = link;
+
+              link.innerHTML = '';
+              var img = document.createElement('img');
+              img.src = 'black_logo.png';
+              img.alt = 'iTowers Exente';
+              img.className = 'nav-logo-img';
+              link.appendChild(img);
+              return true;
+            }
+
+            /* poll until injected, then watch for React re-mounts */
+            var interval = setInterval(function () {
+              if (injectLogo()) {
+                clearInterval(interval);
+                var observer = new MutationObserver(function () {
+                  var link = document.querySelector('[data-testid="nav-logo"]');
+                  if (link && link !== injected) injectLogo();
+                });
+                observer.observe(document.body, { childList: true, subtree: true });
+              }
+            }, 50);
+          })();
+
+          /* ── Internal Details section injected into /residents ── */
+          (function () {
+            var SECTION_ID = 'internal-details-section';
+
+            var HTML = '<div id="' + SECTION_ID + '">' +
+              '<p class="id-eyebrow">INTERNAL DETAILS</p>' +
+              '<h2>Society Information Hub</h2>' +
+              '<p class="id-subtitle">Access SOPs, financial reports and important updates — for residents only.</p>' +
+              '<div class="id-grid">' +
+
+              '<div class="id-card">' +
+                '<div class="id-card-icon">📋</div>' +
+                '<div class="id-card-title">SOPs & Guidelines</div>' +
+                '<div class="id-card-desc">Standard operating procedures for maintenance, security, visitor management and common area usage.</div>' +
+                '<a class="id-btn outline" href="#sops">View SOPs →</a>' +
+              '</div>' +
+
+              '<div class="id-card">' +
+                '<div class="id-card-icon">💰</div>' +
+                '<div class="id-card-title">Financials</div>' +
+                '<div class="id-card-desc">Monthly and annual financial statements, maintenance collection status, and expense breakdowns.</div>' +
+                '<a class="id-btn" href="https://iaoa-expense.netlify.app/" target="_blank" rel="noopener">Open Financials ↗</a>' +
+              '</div>' +
+
+              '<div class="id-card">' +
+                '<div class="id-card-icon">📢</div>' +
+                '<div class="id-card-title">Updates & Notices</div>' +
+                '<div class="id-card-desc">Latest circulars, AGM minutes, committee decisions and important announcements from the management.</div>' +
+                '<a class="id-btn outline" href="#notices">View Notices →</a>' +
+              '</div>' +
+
+              '</div>' +
+              '<hr class="id-divider">' +
+            '</div>';
+
+            function isResidentsPage() {
+              return window.location.pathname === '/residents' ||
+                     window.location.pathname.startsWith('/residents/') ||
+                     window.location.hash === '#/residents' ||
+                     window.location.hash.startsWith('#/residents/');
+            }
+
+            function injectSection() {
+              if (!isResidentsPage()) return;
+              if (document.getElementById(SECTION_ID)) return;
+
+              /* Find the checklist section to insert after it */
+              var checklistHeading = Array.from(document.querySelectorAll('h2, h3')).find(function (h) {
+                return h.textContent.includes('first-week checklist');
+              });
+              if (!checklistHeading) return;
+              var checklistSection = checklistHeading.closest('section') || checklistHeading.parentElement;
+              var residentsDiv = checklistSection.parentElement;
+              if (!residentsDiv) return;
+
+              var wrapper = document.createElement('div');
+              wrapper.innerHTML = HTML;
+              var node = wrapper.firstElementChild;
+              /* insertBefore(node, null) appends — so this works whether there's a next sibling or not */
+              residentsDiv.insertBefore(node, checklistSection.nextSibling);
+            }
+
+            /* Poll every 300ms — MutationObserver doesn't fire since React caches rendered content */
+            setInterval(function () {
+              if (isResidentsPage() && !document.getElementById(SECTION_ID)) {
+                injectSection();
+              }
+            }, 300);
+          })();
+        </script>
     </head>
     <body>
         <noscript>You need to enable JavaScript to run this app.</noscript>
