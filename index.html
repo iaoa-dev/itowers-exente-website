@@ -12,6 +12,20 @@
             rel="stylesheet"
         />
         <title>iTowers Exente — A community in the heart of Electronic City</title>
+        <script>
+          // Restore path after GitHub Pages 404.html redirect
+          (function() {
+            var qs = window.location.search;
+            if (qs.indexOf('?p=') === 0 || qs.indexOf('&p=') !== -1) {
+              var params = new URLSearchParams(qs);
+              var path = params.get('p');
+              var hash = params.get('h') || '';
+              if (path) {
+                window.history.replaceState(null, null, path + hash);
+              }
+            }
+          })();
+        </script>
         <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
         <script defer src="static/js/bundle.js"></script>
         <script>
