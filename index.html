@@ -543,6 +543,12 @@
               }
             }
 
+            function hideEmptyPolicyCard() {
+              var card = document.querySelector('[data-testid="policy-card-5"]');
+              if (card) card.style.setProperty('display', 'none', 'important');
+            }
+            setInterval(hideEmptyPolicyCard, 300);
+
             function hideCommunityCorner() {
               var section = document.querySelector('[data-testid="events-section"]');
               if (section) section.style.setProperty('display', 'none', 'important');
