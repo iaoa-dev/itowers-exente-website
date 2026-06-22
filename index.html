@@ -543,6 +543,17 @@
               }
             }
 
+            function hideLibraryBorrowingDetails() {
+              if (!window.location.pathname.startsWith('/library')) return;
+              var texts = ['Borrow: Up to 3 books', 'Late returns:', 'Open daily, 9:00 AM'];
+              document.querySelectorAll('li').forEach(function(li) {
+                if (texts.some(function(t) { return li.textContent.includes(t); })) {
+                  li.style.setProperty('display', 'none', 'important');
+                }
+              });
+            }
+            setInterval(hideLibraryBorrowingDetails, 300);
+
             function hideEmptyPolicyCard() {
               var card = document.querySelector('[data-testid="policy-card-5"]');
               if (card) card.style.setProperty('display', 'none', 'important');
