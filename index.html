@@ -913,9 +913,155 @@
             window.addEventListener('popstate', function() { setTimeout(schedule, 300); });
           })();
         </script>
+        <!-- Rich structured data: ApartmentComplex + Organization + FAQ -->
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "ApartmentComplex",
+              "name": "iTowers Exente",
+              "alternateName": "Kolte-Patil iTowers Exente",
+              "url": "https://itowersexente.com",
+              "description": "Premium gated community by Kolte-Patil in Electronic City, Bengaluru. 438 homes across 5 towers with 18 world-class amenities including rooftop infinity pool, gym, library, clubhouse and more.",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Konappana Agrahara",
+                "addressLocality": "Electronic City",
+                "addressRegion": "Karnataka",
+                "postalCode": "560100",
+                "addressCountry": "IN"
+              },
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": 12.8399,
+                "longitude": 77.6770
+              },
+              "numberOfRooms": "438",
+              "amenityFeature": [
+                { "@type": "LocationFeatureSpecification", "name": "Rooftop Infinity Pool", "value": true },
+                { "@type": "LocationFeatureSpecification", "name": "Gymnasium", "value": true },
+                { "@type": "LocationFeatureSpecification", "name": "Digital Library", "value": true },
+                { "@type": "LocationFeatureSpecification", "name": "Clubhouse", "value": true },
+                { "@type": "LocationFeatureSpecification", "name": "Tennis Court", "value": true },
+                { "@type": "LocationFeatureSpecification", "name": "Basketball Court", "value": true },
+                { "@type": "LocationFeatureSpecification", "name": "Kids Play Zone", "value": true },
+                { "@type": "LocationFeatureSpecification", "name": "Jogging Track", "value": true },
+                { "@type": "LocationFeatureSpecification", "name": "Landscaped Gardens", "value": true },
+                { "@type": "LocationFeatureSpecification", "name": "Creche", "value": true }
+              ],
+              "telephone": "",
+              "email": "iaoa@itowersexente.com",
+              "image": "https://itowersexente.com/images/overview.jpg",
+              "sameAs": ["https://itowersexente.com"]
+            },
+            {
+              "@type": "Organization",
+              "name": "iTowers Exente Residents Association",
+              "alternateName": "IAOA",
+              "url": "https://itowersexente.com",
+              "email": "iaoa@itowersexente.com",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "Konappana Agrahara",
+                "addressLocality": "Electronic City",
+                "addressRegion": "Karnataka",
+                "postalCode": "560100",
+                "addressCountry": "IN"
+              }
+            },
+            {
+              "@type": "FAQPage",
+              "mainEntity": [
+                {
+                  "@type": "Question",
+                  "name": "Where is iTowers Exente located?",
+                  "acceptedAnswer": { "@type": "Answer", "text": "iTowers Exente is located in Konappana Agrahara, Electronic City, Bengaluru — 560100, Karnataka, India. It is a 10-minute walk from Infosys, TCS, GE and major tech campuses." }
+                },
+                {
+                  "@type": "Question",
+                  "name": "How many homes are in iTowers Exente?",
+                  "acceptedAnswer": { "@type": "Answer", "text": "iTowers Exente has 438 homes (2 and 3 BHK apartments) spread across 5 towers, each 24 floors high, on 4 acres of land." }
+                },
+                {
+                  "@type": "Question",
+                  "name": "What amenities does iTowers Exente have?",
+                  "acceptedAnswer": { "@type": "Answer", "text": "iTowers Exente has 18 world-class amenities including a rooftop infinity pool, state-of-the-art gym, Aristotle Digital Library, clubhouse and banquet hall, tennis and basketball courts, kids play zone, jogging track, landscaped gardens and a creche." }
+                },
+                {
+                  "@type": "Question",
+                  "name": "How do visitors get a pass to enter iTowers Exente?",
+                  "acceptedAnswer": { "@type": "Answer", "text": "Visitors can be pre-approved by residents on the MyGate app, or stop by the gate security desk to be buzzed in. All visitors must be registered in MyGate." }
+                },
+                {
+                  "@type": "Question",
+                  "name": "How to contact iTowers Exente management?",
+                  "acceptedAnswer": { "@type": "Answer", "text": "Contact the iTowers Exente management office at iaoa@itowersexente.com or use the contact form at itowersexente.com/contact." }
+                }
+              ]
+            }
+          ]
+        }
+        </script>
+
+        <!-- Dynamic page title + meta description per route -->
+        <script>
+          (function() {
+            var BASE = 'iTowers Exente';
+            var PAGES = {
+              '/':          { title: BASE + ' — Official Resident Community Portal | Electronic City, Bengaluru', desc: 'Official community portal for Kolte-Patil iTowers Exente residents. 438 homes, 18 amenities, rooftop pool, gym, library. Konappana Agrahara, Electronic City, Bengaluru.' },
+              '/about':     { title: 'About iTowers Exente — Premium Gated Community, Electronic City', desc: 'Learn about Kolte-Patil iTowers Exente — 438 homes across 5 towers on 4 acres in Konappana Agrahara, Electronic City, Bengaluru. 10 min from Infosys, TCS and GE.' },
+              '/amenities': { title: 'Amenities — iTowers Exente | 18 World-Class Facilities', desc: 'Explore 18 amenities at iTowers Exente: rooftop infinity pool, gym, Aristotle Digital Library, clubhouse, tennis & basketball courts, kids play zone, jogging track and more.' },
+              '/community': { title: 'Community — iTowers Exente | Events & Announcements', desc: 'Stay updated with the latest events, society announcements and community news from iTowers Exente, Electronic City, Bengaluru.' },
+              '/visitors':  { title: 'Visitor Information — iTowers Exente | Gate Pass & Parking', desc: 'Everything visitors need to know before arriving at iTowers Exente — security gate pass, parking, navigating the towers, and visiting hours.' },
+              '/residents': { title: 'Residents Portal — iTowers Exente | SOPs & Resources', desc: 'Resident resources for iTowers Exente homeowners and tenants — society financials, move-in SOPs, policies, FM contacts and community guidelines.' },
+              '/policies':  { title: 'Community Policies — iTowers Exente | Rules & Guidelines', desc: 'Community policies at iTowers Exente covering move-in/move-out, pets, waste segregation, flat leakages and common area etiquette.' },
+              '/contact':   { title: 'Contact — iTowers Exente | Management Office', desc: 'Contact the iTowers Exente management office — email iaoa@itowersexente.com or use the contact form. Located in Konappana Agrahara, Electronic City, Bengaluru.' },
+              '/library':   { title: 'Aristotle Digital Library — iTowers Exente | 5000+ Books', desc: 'The Aristotle Digital Library at iTowers Exente offers 5,000+ titles, newspapers and a quiet reading lounge for all residents.' }
+            };
+            function applyMeta() {
+              var path = window.location.pathname.replace(/\/$/, '') || '/';
+              var page = PAGES[path] || PAGES['/'];
+              document.title = page.title;
+              var desc = document.querySelector('meta[name="description"]');
+              if (desc) desc.setAttribute('content', page.desc);
+              var canon = document.querySelector('link[rel="canonical"]');
+              if (canon) canon.setAttribute('href', 'https://itowersexente.com' + (path === '/' ? '/' : path));
+            }
+            applyMeta();
+            ['pushState','replaceState'].forEach(function(m) {
+              var orig = history[m];
+              history[m] = function() { orig.apply(this, arguments); applyMeta(); };
+            });
+            window.addEventListener('popstate', applyMeta);
+          })();
+        </script>
     </head>
     <body>
         <noscript>You need to enable JavaScript to run this app.</noscript>
         <div id="root"></div>
+
+        <!-- Privacy policy link injected into footer for AdSense compliance -->
+        <script>
+          (function() {
+            function injectPrivacyLink() {
+              var footer = document.querySelector('footer');
+              if (!footer || footer.querySelector('[data-privacy-link]')) return;
+              var links = footer.querySelectorAll('a');
+              if (!links.length) return;
+              var lastLink = links[links.length - 1];
+              var sep = document.createTextNode(' · ');
+              var a = document.createElement('a');
+              a.href = '/privacy-policy.html';
+              a.textContent = 'Privacy Policy';
+              a.setAttribute('data-privacy-link', '1');
+              a.style.cssText = lastLink.style.cssText;
+              a.className = lastLink.className;
+              lastLink.parentNode.appendChild(sep);
+              lastLink.parentNode.appendChild(a);
+            }
+            setInterval(injectPrivacyLink, 500);
+          })();
+        </script>
     </body>
 </html>
