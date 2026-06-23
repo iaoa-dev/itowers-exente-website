@@ -8,6 +8,27 @@
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
           gtag('config', 'G-1Q1C6XSSH6');
+
+          /* Track SPA page views on every React Router navigation */
+          (function() {
+            function sendPageView() {
+              gtag('event', 'page_view', {
+                page_path: window.location.pathname + window.location.search,
+                page_title: document.title,
+                page_location: window.location.href
+              });
+            }
+            /* Intercept pushState and replaceState */
+            ['pushState', 'replaceState'].forEach(function(method) {
+              var orig = history[method];
+              history[method] = function() {
+                orig.apply(this, arguments);
+                sendPageView();
+              };
+            });
+            /* Also catch back/forward navigation */
+            window.addEventListener('popstate', sendPageView);
+          })();
         </script>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
