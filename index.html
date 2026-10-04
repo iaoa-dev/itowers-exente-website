@@ -181,6 +181,250 @@
             width: auto;
             display: block;
           }
+          /* ── Society Events Section ── */
+          #society-events-section {
+            font-family: 'Outfit', sans-serif;
+            background: #1a3622;
+            padding: 4rem 0;
+          }
+          #society-events-section .ev-inner {
+            max-width: 72rem;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+          }
+          #society-events-section .ev-eyebrow {
+            font-size: 0.7rem;
+            letter-spacing: 0.18em;
+            color: rgba(250,248,244,0.6);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+          }
+          #society-events-section .ev-eyebrow::before {
+            content: '';
+            display: inline-block;
+            width: 2rem;
+            height: 1px;
+            background: rgba(250,248,244,0.4);
+          }
+          #society-events-section h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.4rem;
+            font-weight: 500;
+            color: #FAF8F4;
+            margin: 0 0 0.4rem;
+          }
+          #society-events-section .ev-subtitle {
+            color: rgba(250,248,244,0.65);
+            font-size: 0.95rem;
+            margin-bottom: 2.5rem;
+          }
+          .ev-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+          }
+          .ev-card {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(250,248,244,0.15);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: box-shadow 0.2s, transform 0.2s, background 0.2s;
+            cursor: pointer;
+          }
+          .ev-card:hover { box-shadow: 0 6px 28px rgba(0,0,0,0.35); transform: translateY(-2px); background: rgba(255,255,255,0.11); }
+          .ev-card-thumb {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+            background: #f0ece2;
+          }
+          .ev-card-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+          }
+          .ev-card:hover .ev-card-thumb img { transform: scale(1.05); }
+          .ev-card-thumb .ev-media-count {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.55);
+            color: #fff;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            padding: 3px 8px;
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+          }
+          .ev-card-body { padding: 1.25rem 1.4rem 1.4rem; }
+          .ev-card-date {
+            font-size: 0.72rem;
+            letter-spacing: 0.12em;
+            color: rgba(200,185,122,0.9);
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+          }
+          .ev-card-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.35rem;
+            font-weight: 500;
+            color: #FAF8F4;
+            margin: 0 0 0.4rem;
+          }
+          .ev-card-desc {
+            font-size: 0.875rem;
+            color: rgba(250,248,244,0.65);
+            line-height: 1.5;
+            margin: 0;
+          }
+          .ev-card-view {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-top: 0.9rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(200,185,122,0.9);
+            letter-spacing: 0.06em;
+          }
+          .ev-card-view svg { transition: transform 0.2s; }
+          .ev-card:hover .ev-card-view svg { transform: translateX(3px); }
+
+          /* Lightbox */
+          #ev-lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(10,10,10,0.92);
+            align-items: center;
+            justify-content: center;
+          }
+          #ev-lightbox.open { display: flex; }
+          #ev-lightbox-dialog {
+            display: flex;
+            flex-direction: column;
+            width: 90vw;
+            max-width: 1100px;
+            max-height: 92vh;
+            background: #111;
+            border-radius: 16px;
+            overflow: hidden;
+          }
+          #ev-lightbox-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 1.75rem 1rem;
+            flex-shrink: 0;
+          }
+          #ev-lightbox-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            color: #FAF8F4;
+            font-weight: 500;
+          }
+          #ev-lightbox-close {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: rgba(250,248,244,0.8);
+            font-size: 1.1rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 6px 11px;
+            border-radius: 50%;
+            transition: background 0.15s;
+          }
+          #ev-lightbox-close:hover { background: rgba(255,255,255,0.2); color: #FAF8F4; }
+          #ev-lightbox-body {
+            padding: 0 1.75rem 1.75rem;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+          }
+          #ev-lb-main-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+          }
+          .ev-lb-main {
+            max-width: 100%;
+            max-height: 62vh;
+            object-fit: contain;
+            border-radius: 10px;
+            display: block;
+            margin: 0 auto;
+          }
+          .ev-lb-main-video {
+            width: 100%;
+            max-height: 62vh;
+            border-radius: 10px;
+            display: block;
+            background: #000;
+          }
+          .ev-lb-thumbs {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            flex-shrink: 0;
+          }
+          .ev-lb-thumb {
+            width: 130px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            opacity: 0.55;
+            transition: opacity 0.15s, border-color 0.15s;
+            border: 2px solid transparent;
+            flex-shrink: 0;
+          }
+          .ev-lb-thumb:hover, .ev-lb-thumb.active { opacity: 1; border-color: #c8b97a; }
+          .ev-lb-thumb-video {
+            position: relative;
+            width: 130px;
+            height: 90px;
+            border-radius: 8px;
+            cursor: pointer;
+            opacity: 0.55;
+            transition: opacity 0.15s, border-color 0.15s;
+            border: 2px solid transparent;
+            background: #000;
+            overflow: hidden;
+            flex-shrink: 0;
+          }
+          .ev-lb-thumb-video video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none;
+          }
+          .ev-lb-thumb-video .ev-play-icon {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.35);
+          }
+          .ev-lb-thumb-video .ev-play-icon svg {
+            width: 28px;
+            height: 28px;
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
+          }
+          .ev-lb-thumb-video:hover, .ev-lb-thumb-video.active { opacity: 1; border-color: #c8b97a; }
+
           /* Internal Details section */
           #internal-details-section {
             font-family: 'Outfit', sans-serif;
@@ -597,6 +841,236 @@
             }
             setInterval(hideCommunityCorner, 300);
 
+            /* ── Society Events Data — add/edit events here ── */
+            var SOCIETY_EVENTS = [
+              {
+                title: 'Independence Day Celebration',
+                date: 'AUGUST 15, 2026',
+                desc: 'Flag hoisting, cultural performances and refreshments for all residents at the clubhouse lawn.',
+                cover: 'images/Independence Day 2026/WhatsApp Image 2026-10-04 at 19.45.26.jpeg',
+                media: [
+                  { type: 'img', src: 'images/Independence Day 2026/WhatsApp Image 2026-10-04 at 19.45.26.jpeg' },
+                  { type: 'img', src: 'images/Independence Day 2026/WhatsApp Image 2026-10-04 at 19.45.26 (1).jpeg' }
+                ]
+              },
+              {
+                title: 'Ganesh Chaturthi',
+                date: 'OCTOBER 2025',
+                desc: 'Community puja, aarti, prasad distribution and eco-friendly Ganesh idol immersion.',
+                cover: 'images/Ganesh Chaturthi 2025/WhatsApp Image 2026-10-04 at 17.36.15.jpeg',
+                media: [
+                  { type: 'img', src: 'images/Ganesh Chaturthi 2025/WhatsApp Image 2026-10-04 at 17.36.15.jpeg' },
+                  { type: 'img', src: 'images/Ganesh Chaturthi 2025/WhatsApp Image 2026-10-04 at 17.36.16 (1).jpeg' },
+                  { type: 'img', src: 'images/Ganesh Chaturthi 2025/WhatsApp Image 2026-10-04 at 17.36.16.jpeg' },
+                  { type: 'img', src: 'images/Ganesh Chaturthi 2025/WhatsApp Image 2026-10-04 at 17.39.45.jpeg' },
+                  { type: 'img', src: 'images/Ganesh Chaturthi 2025/WhatsApp Image 2026-10-04 at 17.39.46.jpeg' },
+                  { type: 'video', src: 'images/Ganesh Chaturthi 2025/WhatsApp Video 2026-10-04 at 17.39.44.mp4' },
+                  { type: 'video', src: 'images/Ganesh Chaturthi 2025/WhatsApp Video 2026-10-04 at 17.39.45.mp4' },
+                  { type: 'video', src: 'images/Ganesh Chaturthi 2025/WhatsApp Video 2026-10-04 at 17.39.46.mp4' }
+                ]
+              },
+              {
+                title: 'Diwali Night',
+                date: 'NOVEMBER 1, 2024',
+                desc: 'Rangoli competition, diyas on every balcony, fireworks display and community dinner at the party lawn.',
+                cover: 'images/overview.jpg',
+                media: [
+                  { type: 'img', src: 'images/overview.jpg' },
+                  { type: 'img', src: 'images/aerial.jpg' }
+                ]
+              },
+              {
+                title: 'Kids Sports Day',
+                date: 'DECEMBER 14, 2024',
+                desc: 'Relay races, swimming galas and fun games for children across all age groups.',
+                cover: 'images/kids_play.jpg',
+                media: [
+                  { type: 'img', src: 'images/kids_play.jpg' },
+                  { type: 'img', src: 'images/pool.jpg' },
+                  { type: 'img', src: 'images/basketball.jpg' }
+                ]
+              },
+              {
+                title: 'New Year Bash 2025',
+                date: 'DECEMBER 31, 2024',
+                desc: 'Live music, DJ night, buffet dinner and midnight countdown on the rooftop terrace.',
+                cover: 'images/rooftop_pool.jpg',
+                media: [
+                  { type: 'img', src: 'images/rooftop_pool.jpg' },
+                  { type: 'img', src: 'images/lounge.jpg' }
+                ]
+              },
+              {
+                title: 'Holi at Exente',
+                date: 'MARCH 14, 2025',
+                desc: 'Colours, thandai, music and dance at the central gardens — a morning full of joy for all residents.',
+                cover: 'images/pergola.jpg',
+                media: [
+                  { type: 'img', src: 'images/pergola.jpg' },
+                  { type: 'img', src: 'images/gardens.jpg' }
+                ]
+              }
+            ];
+
+            function injectEventsSection() {
+              if (window.location.pathname !== '/community') return;
+              if (document.getElementById('society-events-section')) return;
+
+              /* Find a stable anchor — the page footer or the main content wrapper */
+              var anchor = document.querySelector('main') || document.querySelector('[data-testid="community-page"]') || document.querySelector('footer');
+              if (!anchor) return;
+
+              var cards = '';
+              SOCIETY_EVENTS.forEach(function(ev, i) {
+                var photoCount = ev.media.filter(function(m){ return m.type === 'img'; }).length;
+                var videoCount = ev.media.filter(function(m){ return m.type === 'video'; }).length;
+                var label = [];
+                if (photoCount) label.push(photoCount + ' photo' + (photoCount > 1 ? 's' : ''));
+                if (videoCount) label.push(videoCount + ' video' + (videoCount > 1 ? 's' : ''));
+                cards +=
+                  '<div class="ev-card" data-ev-idx="' + i + '">' +
+                    '<div class="ev-card-thumb">' +
+                      '<img src="' + ev.cover + '" alt="' + ev.title + '" loading="lazy" />' +
+                      (label.length ? '<span class="ev-media-count">' + label.join(' · ') + '</span>' : '') +
+                    '</div>' +
+                    '<div class="ev-card-body">' +
+                      '<div class="ev-card-date">' + ev.date + '</div>' +
+                      '<h3 class="ev-card-title">' + ev.title + '</h3>' +
+                      '<p class="ev-card-desc">' + ev.desc + '</p>' +
+                      '<span class="ev-card-view">View photos &amp; videos' +
+                        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>' +
+                      '</span>' +
+                    '</div>' +
+                  '</div>';
+              });
+
+              var section = document.createElement('section');
+              section.id = 'society-events-section';
+              section.innerHTML =
+                '<div class="ev-inner">' +
+                  '<p class="ev-eyebrow">SOCIETY LIFE</p>' +
+                  '<h2>Events &amp; Celebrations</h2>' +
+                  '<p class="ev-subtitle">Moments that bring the Exente community together.</p>' +
+                  '<div class="ev-cards">' + cards + '</div>' +
+                '</div>';
+
+              /* Insert before Resident groups section — climb to full-width container */
+              var anchor = null;
+              var walker2 = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+              var node2;
+              while ((node2 = walker2.nextNode())) {
+                if (node2.textContent.trim() === 'Resident groups') {
+                  /* Walk up past constrained-width wrappers to a full-width section */
+                  var el = node2.parentElement;
+                  while (el && el.parentElement) {
+                    var parentClass = el.parentElement.className || '';
+                    /* Stop when parent is the page root or a full-width container */
+                    if (el.parentElement.tagName === 'MAIN' || parentClass.indexOf('max-w') === -1) break;
+                    el = el.parentElement;
+                  }
+                  /* Now el is inside a full-width parent — go one level up to get the section */
+                  if (el.parentElement && el.parentElement.children.length > 1) {
+                    anchor = el;
+                  } else {
+                    anchor = el.parentElement;
+                  }
+                  break;
+                }
+              }
+              if (anchor && anchor.parentNode) {
+                anchor.parentNode.insertBefore(section, anchor);
+              } else {
+                var footer = document.querySelector('footer');
+                if (footer) footer.parentNode.insertBefore(section, footer);
+                else document.body.appendChild(section);
+              }
+
+              /* Wire up card clicks to lightbox */
+              section.querySelectorAll('.ev-card').forEach(function(card) {
+                card.addEventListener('click', function() {
+                  openEventsLightbox(parseInt(card.dataset.evIdx, 10));
+                });
+              });
+            }
+
+            /* ── Lightbox ── */
+            function buildLightbox() {
+              if (document.getElementById('ev-lightbox')) return;
+              var lb = document.createElement('div');
+              lb.id = 'ev-lightbox';
+              lb.innerHTML =
+                '<div id="ev-lightbox-dialog">' +
+                  '<div id="ev-lightbox-header">' +
+                    '<div id="ev-lightbox-title"></div>' +
+                    '<button id="ev-lightbox-close" aria-label="Close">✕</button>' +
+                  '</div>' +
+                  '<div id="ev-lightbox-body">' +
+                    '<div id="ev-lb-main-wrap"></div>' +
+                    '<div class="ev-lb-thumbs" id="ev-lb-thumbs"></div>' +
+                  '</div>' +
+                '</div>';
+              document.body.appendChild(lb);
+              document.getElementById('ev-lightbox-close').addEventListener('click', closeEventsLightbox);
+              lb.addEventListener('click', function(e) { if (e.target === lb) closeEventsLightbox(); });
+              document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeEventsLightbox(); });
+            }
+
+            function openEventsLightbox(idx) {
+              buildLightbox();
+              var ev = SOCIETY_EVENTS[idx];
+              document.getElementById('ev-lightbox-title').textContent = ev.title;
+              var thumbsEl = document.getElementById('ev-lb-thumbs');
+              thumbsEl.innerHTML = '';
+              ev.media.forEach(function(m, mi) {
+                if (m.type === 'img') {
+                  var th = document.createElement('img');
+                  th.src = m.src;
+                  th.className = 'ev-lb-thumb' + (mi === 0 ? ' active' : '');
+                  th.addEventListener('click', function() { showMedia(ev, mi); });
+                  thumbsEl.appendChild(th);
+                } else {
+                  var th = document.createElement('div');
+                  th.className = 'ev-lb-thumb-video' + (mi === 0 ? ' active' : '');
+                  th.title = 'Play video';
+                  var vid = document.createElement('video');
+                  vid.src = m.src;
+                  vid.preload = 'metadata';
+                  vid.muted = true;
+                  vid.currentTime = 0.5;
+                  th.appendChild(vid);
+                  th.innerHTML += '<div class="ev-play-icon"><svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="12" fill="rgba(0,0,0,0.4)"/><polygon points="10,8 17,12 10,16" fill="white"/></svg></div>';
+                  th.addEventListener('click', function() { showMedia(ev, mi); });
+                  thumbsEl.appendChild(th);
+                }
+              });
+              showMedia(ev, 0);
+              document.getElementById('ev-lightbox').classList.add('open');
+              document.body.style.overflow = 'hidden';
+            }
+
+            function showMedia(ev, mi) {
+              var m = ev.media[mi];
+              var wrap = document.getElementById('ev-lb-main-wrap');
+              var thumbs = document.querySelectorAll('#ev-lb-thumbs > *');
+              thumbs.forEach(function(t, i) { t.classList.toggle('active', i === mi); });
+              if (m.type === 'img') {
+                wrap.innerHTML = '<img class="ev-lb-main" src="' + m.src + '" alt="' + ev.title + '" />';
+              } else {
+                wrap.innerHTML = '<video class="ev-lb-main-video" src="' + m.src + '" controls autoplay></video>';
+              }
+            }
+
+            function closeEventsLightbox() {
+              var lb = document.getElementById('ev-lightbox');
+              if (lb) lb.classList.remove('open');
+              document.body.style.overflow = '';
+              /* Pause any playing video */
+              var vid = document.querySelector('#ev-lb-main-wrap video');
+              if (vid) vid.pause();
+            }
+
+            setInterval(injectEventsSection, 300);
+
             function removeCommitteeSection() {
               /* Target the first committee card; its grandparent is the section container */
               var card = document.querySelector('[data-testid="committee-0"]');
@@ -885,6 +1359,7 @@
                 removeSentences();
                 removeCommitteeSection();
                 injectSponsorsSection();
+                injectEventsSection();
                 patchAmenitiesCreche();
                 patchVendorCards();
                 patchNavLocation();
