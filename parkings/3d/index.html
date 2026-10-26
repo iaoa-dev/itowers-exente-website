@@ -54,7 +54,7 @@ import * as THREE from './three.module.min.js';
 const SCALE = 0.25;          // metres per drawing point (estimated from slot pitch; tweak if tape-measure says otherwise)
 const WALL_H = 3.0, EYE = 1.6, RADIUS = 0.35;
 const LEVELS = {'Basement-1': {key:'b1', img:'../basement-1.png'}, 'Basement-2': {key:'b2', img:'../basement-2.png'}};
-const touch = matchMedia('(pointer:coarse)').matches;
+const touch = matchMedia('(pointer:coarse)').matches || /[?&]touch=1/.test(location.search);   // ?touch=1 previews the phone controls on a laptop
 
 const $ = id => document.getElementById(id);
 const renderer = new THREE.WebGLRenderer({canvas:$('view'), antialias:true});
