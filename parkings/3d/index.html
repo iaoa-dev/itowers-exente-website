@@ -260,7 +260,7 @@ function updateSigns() {
 }
 
 // ---------- people walking around (procedural, no downloads) ----------
-let peopleOn = !/[?&]people=0/.test(location.search), people = [], peopleGroup = null;
+let peopleOn = /[?&]people=1/.test(location.search), people = [], peopleGroup = null;   // off by default; ?people=1 turns them on at load
 const SKIN = [0xf1c8a5, 0xe0ac86, 0xc68642, 0x9a6a47, 0x6b4430, 0xf5d3b8];
 const HAIR = [0x1a1410, 0x2b1d14, 0x4a3224, 0x7a5a3a, 0x8a8a8a, 0x111111, 0x3a2a20];
 const TOP = [0x2b5fa8, 0xb8322a, 0x2f7d4f, 0xe8e2d0, 0x6b4f9e, 0x1f2937, 0xd4883a, 0x3c8fa8, 0xc9507a, 0x8a8f3a];
