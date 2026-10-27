@@ -287,39 +287,89 @@ function makePerson() {
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.105, 14, 12), skin); head.scale.set(0.92, 1.12, 1); head.position.y = 1.67; body.add(head);
   const cut = new THREE.Mesh(new THREE.SphereGeometry(0.113, 14, 12, 0, Math.PI * 2, 0, Math.PI * 0.62), hair); cut.scale.set(0.95, 1.1, 1.02); cut.position.set(0, 1.685, -0.012); body.add(cut);
   if (female && Math.random() < 0.6) { const lh = cap(0.085, 0.2, hair, 0, 1.55, -0.07); lh.scale.set(1, 1, 0.7); body.add(lh); }
-  return {root, L, R, AL, AR, body, s, ph: Math.random() * 6.28, speed: 0.95 + Math.random() * 0.6, heading: Math.random() * 6.28, pause: 0, turn: 0, x: 0, z: 0};
+  return {root, L, R, AL, AR, body, s, ph: Math.random() * 6.28, speed: 0.95 + Math.random() * 0.6, heading: Math.random() * 6.28, pause: Math.random() * 3, path: null, fails: 0, pi: 0, stuckT: 0, lx: 0, lz: 0, x: 0, z: 0};
 }
 
 function spawnPeople() {
   if (peopleGroup) { group.remove(peopleGroup); peopleGroup = null; }
   people = [];
   if (!peopleOn || !lightPos.length) return;
+  buildNav();
   peopleGroup = new THREE.Group(); group.add(peopleGroup);
   const n = touch ? 6 : 14;
   for (let tries = 0; people.length < n && tries < 400; tries++) {
     const l = lightPos[Math.random() * lightPos.length | 0], x = l.x + (Math.random() - 0.5) * 3, z = l.z + (Math.random() - 0.5) * 3;
-    if (!free(x, z) || Math.hypot(x - player.x, z - player.z) < 8 || people.some(p => Math.hypot(p.x - x, p.z - z) < 5)) continue;
+    if (!inMain(x, z) || Math.hypot(x - player.x, z - player.z) < 8 || people.some(p => Math.hypot(p.x - x, p.z - z) < 5)) continue;
     const p = makePerson(); p.x = x; p.z = z; p.root.position.set(x, 0, z); peopleGroup.add(p.root); people.push(p);
+  }
+}
+
+// coarse walkability grid + A* so people walk purposefully between places instead of wandering in circles
+let nav = null;
+function buildNav() {
+  const cs = 0.6, w = Math.ceil(L.W * L.cell * SCALE / cs), h = Math.ceil(L.H * L.cell * SCALE / cs), ok = new Uint8Array(w * h);
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) ok[j * w + i] = free((i + 0.5) * cs, (j + 0.5) * cs) ? 1 : 0;
+  // keep only the largest connected walkable region, so nobody spawns in a pocket they can't leave
+  const comp = new Int32Array(w * h).fill(-1), sizes = []; let id = 0;
+  for (let k0 = 0; k0 < w * h; k0++) { if (!ok[k0] || comp[k0] >= 0) continue; const st = [k0]; comp[k0] = id; let n = 0;
+    while (st.length) { const k = st.pop(); n++; const i = k % w, j = (k / w) | 0; for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const ni = i + di, nj = j + dj; if (ni >= 0 && nj >= 0 && ni < w && nj < h) { const nk = nj * w + ni; if (ok[nk] && comp[nk] < 0) { comp[nk] = id; st.push(nk); } } } }
+    sizes.push(n); id++; }
+  nav = {cs, w, h, ok, comp, main: sizes.indexOf(Math.max(...sizes))};
+}
+const inMain = (x, z) => { const i = x / nav.cs | 0, j = z / nav.cs | 0; return i >= 0 && j >= 0 && i < nav.w && j < nav.h && nav.comp[j * nav.w + i] === nav.main; };
+function findPath(x0, z0, x1, z1) {
+  const {cs, w, h, ok} = nav, cell = (x, z) => [Math.max(0, Math.min(w - 1, x / cs | 0)), Math.max(0, Math.min(h - 1, z / cs | 0))];
+  const [sx, sz] = cell(x0, z0), [gx, gz] = cell(x1, z1); if (!ok[gz * w + gx]) return null;
+  const g = new Float32Array(w * h).fill(1e9), from = new Int32Array(w * h).fill(-1), heap = [], push = (k, f) => { heap.push([f, k]); let i = heap.length - 1; while (i) { const q = (i - 1) >> 1; if (heap[q][0] <= heap[i][0]) break; [heap[q], heap[i]] = [heap[i], heap[q]]; i = q; } };
+  const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; let i = 0; for (;;) { let l = 2 * i + 1, r = l + 1, m = i; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r < heap.length && heap[r][0] < heap[m][0]) m = r; if (m === i) break; [heap[m], heap[i]] = [heap[i], heap[m]]; i = m; } } return top[1]; };
+  const hf = (i, j) => Math.hypot(i - gx, j - gz); g[sz * w + sx] = 0; push(sz * w + sx, hf(sx, sz)); let found = false, iters = 0;
+  while (heap.length && iters++ < 60000) {
+    const k = pop(), i = k % w, j = (k / w) | 0; if (i === gx && j === gz) { found = true; break; }
+    for (let d = 0; d < 8; d++) {
+      const dx = [1, -1, 0, 0, 1, 1, -1, -1][d], dz = [0, 0, 1, -1, 1, -1, 1, -1][d], ni = i + dx, nj = j + dz;
+      if (ni < 0 || nj < 0 || ni >= w || nj >= h || !ok[nj * w + ni]) continue;
+      if (dx && dz && (!ok[j * w + ni] || !ok[nj * w + i])) continue;       // no corner cutting
+      const nk = nj * w + ni, ng = g[k] + (dx && dz ? 1.414 : 1); if (ng < g[nk]) { g[nk] = ng; from[nk] = k; push(nk, ng + hf(ni, nj)); }
+    }
+  }
+  if (!found) return null;
+  const path = []; for (let k = gz * w + gx; k !== -1; k = from[k]) path.push({x: ((k % w) + 0.5) * cs, z: (((k / w) | 0) + 0.5) * cs }); path.reverse();
+  return path.filter((_, i) => i % 2 === 1 || i === path.length - 1);        // thin the points a little
+}
+function newGoal(p) {
+  for (let t = 0; t < 8; t++) {
+    const l = lightPos[Math.random() * lightPos.length | 0], d = Math.hypot(l.x - p.x, l.z - p.z); if (d < 15 || !inMain(l.x, l.z)) continue;
+    const path = findPath(p.x, p.z, l.x, l.z); if (path && path.length > 3) { p.path = path; p.pi = 0; p.stuckT = 0; p.fails = 0; p.lx = p.x; p.lz = p.z; return; }
+  }
+  p.path = null; p.pause = 1;
+  if (inMain(p.x, p.z) === false || ++p.fails > 3) {      // stranded: re-appear somewhere on a normal aisle
+    for (let t = 0; t < 40; t++) { const l = lightPos[Math.random() * lightPos.length | 0]; if (inMain(l.x, l.z) && Math.hypot(l.x - player.x, l.z - player.z) > 8) { p.x = l.x; p.z = l.z; p.fails = 0; break; } }
   }
 }
 
 function updatePeople(dt) {
   for (const p of people) {
-    const near = Math.hypot(p.x - player.x, p.z - player.z) < 55; p.root.visible = near; if (!near) continue;
-    const toPlayer = Math.hypot(p.x - player.x, p.z - player.z);
-    if (p.pause > 0) { p.pause -= dt; p.ph *= 0.9; }
+    const dP = Math.hypot(p.x - player.x, p.z - player.z), near = dP < 55; p.root.visible = near;      // far-away people keep walking too, just without drawing them
+    let walking = true;
+    if (p.pause > 0) { p.pause -= dt; walking = false; }
     else {
-      if (Math.random() < dt * 0.04) p.pause = 1 + Math.random() * 3;                        // stop and look at phone / wait
-      if (Math.random() < dt * 0.35) p.turn = (Math.random() - 0.5) * 0.8;                    // gentle wandering
-      let target = p.heading + p.turn;
-      const probe = a => free(p.x + Math.sin(a) * 0.9, p.z + Math.cos(a) * 0.9);
-      if (!probe(target)) { for (const d of [0.5, -0.5, 1.0, -1.0, 1.6, -1.6, 2.4, -2.4, 3.1]) if (probe(target + d)) { target += d; break; } p.turn = 0; }
-      let diff = ((target - p.heading + Math.PI * 3) % (Math.PI * 2)) - Math.PI; p.heading += Math.max(-2.2 * dt, Math.min(2.2 * dt, diff));
-      const v = p.speed * (toPlayer < 1.6 ? 0.4 : 1) * dt, nx = p.x + Math.sin(p.heading) * v, nz = p.z + Math.cos(p.heading) * v;
-      if (free(nx, nz)) { p.x = nx; p.z = nz; } else p.heading += 0.8;
-      p.ph += p.speed * 4.3 * dt;
+      if (!p.path) newGoal(p);
+      if (p.path) {
+        const t = p.path[p.pi], dx = t.x - p.x, dz = t.z - p.z, dist = Math.hypot(dx, dz);
+        if (dist < 0.45) { p.pi++; if (p.pi >= p.path.length) { p.path = null; p.pause = 1.5 + Math.random() * 4; walking = false; } }
+        else {
+          const want = Math.atan2(dx, dz); let diff = ((want - p.heading + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+          p.heading += Math.max(-3 * dt, Math.min(3 * dt, diff));
+          const v = p.speed * (dP < 1.6 ? 0.4 : 1) * (Math.abs(diff) > 1 ? 0.4 : 1) * dt, nx = p.x + Math.sin(p.heading) * v, nz = p.z + Math.cos(p.heading) * v;
+          if (free(nx, nz)) { p.x = nx; p.z = nz; } else if (free(nx, p.z)) p.x = nx; else if (free(p.x, nz)) p.z = nz; else p.stuckT += dt * 3;
+          p.ph += p.speed * 4.3 * dt;
+          p.stuckT += dt; if (p.stuckT > 3) { if (Math.hypot(p.x - p.lx, p.z - p.lz) < 0.8) { p.path = null; } p.stuckT = 0; p.lx = p.x; p.lz = p.z; }   // not getting anywhere: pick a new destination
+        }
+      }
     }
-    const walking = p.pause <= 0, a = walking ? 1 : 0, ph = p.ph;
+    if (!near) continue;
+    const a = walking ? 1 : 0, ph = p.ph;
+    if (!walking) p.ph = Math.round(p.ph / Math.PI) * Math.PI;
     p.L.hip.rotation.x = Math.sin(ph) * 0.5 * a;  p.R.hip.rotation.x = Math.sin(ph + Math.PI) * 0.5 * a;
     p.L.knee.rotation.x = Math.max(0, -Math.cos(ph)) * 0.9 * a; p.R.knee.rotation.x = Math.max(0, Math.cos(ph)) * 0.9 * a;
     p.AL.sh.rotation.x = -Math.sin(ph) * 0.4 * a;  p.AR.sh.rotation.x = Math.sin(ph) * 0.4 * a;
