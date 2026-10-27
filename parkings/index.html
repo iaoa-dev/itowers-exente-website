@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="robots" content="noindex, nofollow">
+<!-- Google tag (same GA4 property as the main itowersexente.com site) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1Q1C6XSSH6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-1Q1C6XSSH6');
+</script>
+
 <title>Parking Map</title>
 <style>
   :root { --bg:#f4f5f7; --ink:#1d2433; --muted:#6b7280; --own:#2563eb; --free:#9ca3af; --hit:#f97316; }
@@ -124,6 +133,7 @@ function search(raw) {
   return [...slots, ...flats].slice(0, 25);
 }
 function applySelection(keys, focus) {
+  window.gtag && gtag('event', 'parking_search_select', {view: '2d'});
   hits = new Set(keys); render();
   if (focus) { if (focus.l !== level) { level = focus.l; render(); } plan.complete ? focusSlot(focus.s) : plan.addEventListener('load', () => focusSlot(focus.s), {once:true}); showCard(focus.s); }
 }

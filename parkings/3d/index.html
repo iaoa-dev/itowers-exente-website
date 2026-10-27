@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="robots" content="noindex, nofollow">
+<!-- Google tag (same GA4 property as the main itowersexente.com site) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1Q1C6XSSH6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-1Q1C6XSSH6');
+</script>
+
 <title>Parking walkthrough (3D)</title>
 <style>
   * { box-sizing: border-box; }
@@ -293,6 +302,7 @@ function step(dt) {
 }
 
 function teleportToSlot(s, lv) {
+  window.gtag && gtag('event', 'parking_search_select', {view: '3d'});
   const go = () => {
     const sx = s.x * SCALE, sz = s.y * SCALE;
     let best = null;
