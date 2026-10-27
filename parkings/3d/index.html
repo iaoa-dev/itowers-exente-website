@@ -23,6 +23,7 @@
   .tabs button { border:1px solid #4b5563; background:#1f2430; color:#fff; padding:6px 11px; font-size:14px; cursor:pointer; }
   .tabs button:first-child { border-radius:6px 0 0 6px; } .tabs button:last-child { border-radius:0 6px 6px 0; border-left:0; }
   .tabs button.on { background:#fff; color:#111; }
+  .tg { border:1px solid #4b5563; background:#1f2430; color:#fff; padding:6px 11px; font-size:14px; border-radius:6px; cursor:pointer; } .tg.on { background:#fff; color:#111; }
   .search { position:relative; flex:1 1 200px; max-width:340px; }
   .search input { width:100%; padding:7px 10px; font-size:15px; border:1px solid #4b5563; border-radius:6px; background:#1f2430; color:#fff; }
   #results { position:absolute; top:100%; left:0; right:0; margin-top:2px; background:#1f2430; border:1px solid #4b5563; border-radius:6px; max-height:45vh; overflow:auto; display:none; }
@@ -48,6 +49,7 @@
 <div class="bar">
   <a href="../">← 2D map</a>
   <div class="tabs" id="tabs"></div>
+  <button id="ppl" class="tg">People: On</button>
   <div class="search"><input id="q" placeholder="Go to flat (B-304) or slot (204, B2 17)" autocomplete="off"><div id="results"></div></div>
 </div>
 <div id="card"></div>
@@ -257,6 +259,78 @@ function updateSigns() {
   }
 }
 
+// ---------- people walking around (procedural, no downloads) ----------
+let peopleOn = !/[?&]people=0/.test(location.search), people = [], peopleGroup = null;
+const SKIN = [0xf1c8a5, 0xe0ac86, 0xc68642, 0x9a6a47, 0x6b4430, 0xf5d3b8];
+const HAIR = [0x1a1410, 0x2b1d14, 0x4a3224, 0x7a5a3a, 0x8a8a8a, 0x111111, 0x3a2a20];
+const TOP = [0x2b5fa8, 0xb8322a, 0x2f7d4f, 0xe8e2d0, 0x6b4f9e, 0x1f2937, 0xd4883a, 0x3c8fa8, 0xc9507a, 0x8a8f3a];
+const BOTTOM = [0x1e2a44, 0x2a2a2e, 0x4a4a52, 0x6a5a45, 0x24344f, 0x8a7a62];
+const pick = a => a[Math.random() * a.length | 0];
+const lam = c => new THREE.MeshLambertMaterial({color: c});
+
+function makePerson() {
+  const female = Math.random() < 0.45, s = (female ? 1.58 + Math.random() * 0.16 : 1.68 + Math.random() * 0.17) / 1.75;
+  const skin = lam(pick(SKIN)), top = lam(pick(TOP)), bot = lam(pick(BOTTOM)), hair = lam(pick(HAIR)), shoe = lam(pick([0x151515, 0x3a2a20, 0xeeeeee, 0x2a3a5a]));
+  const root = new THREE.Group(), body = new THREE.Group(); root.add(body); body.scale.setScalar(s);
+  const cap = (r, len, m, x = 0, y = 0, z = 0) => { const o = new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 4, 10), m); o.position.set(x, y, z); return o; };
+  const leg = x => { const hip = new THREE.Group(); hip.position.set(x, 0.92, 0); hip.add(cap(female ? 0.07 : 0.078, 0.34, bot, 0, -0.24, 0));
+    const knee = new THREE.Group(); knee.position.y = -0.46; knee.add(cap(0.06, 0.34, bot, 0, -0.23, 0));
+    const foot = new THREE.Mesh(new THREE.BoxGeometry(0.095, 0.07, 0.26), shoe); foot.position.set(0, -0.43, 0.05); knee.add(foot); hip.add(knee); body.add(hip); return {hip, knee}; };
+  const arm = x => { const sh = new THREE.Group(); sh.position.set(x, 1.42, 0); sh.add(cap(0.045, 0.2, top, 0, -0.16, 0));
+    const el = new THREE.Group(); el.position.y = -0.31; el.add(cap(0.04, 0.2, Math.random() < 0.4 ? top : skin, 0, -0.14, 0));
+    const hand = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8), skin); hand.position.y = -0.3; el.add(hand); sh.add(el); body.add(sh); return {sh, el}; };
+  const L = leg(-0.09), R = leg(0.09), AL = arm(-0.21 * (female ? 0.92 : 1)), AR = arm(0.21 * (female ? 0.92 : 1));
+  const torso = cap(0.15, 0.3, top, 0, 1.2, 0); torso.scale.set(female ? 1.15 : 1.3, 1, 0.75); body.add(torso);
+  const hips = cap(0.14, 0.06, bot, 0, 0.97, 0); hips.scale.set(female ? 1.3 : 1.2, 0.8, 0.8); body.add(hips);
+  if (female && Math.random() < 0.5) { const sk = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.24, 0.34, 14, 1, true), lam(pick(TOP))); sk.position.y = 0.8; sk.material.side = THREE.DoubleSide; body.add(sk); }
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.05, 0.1, 8), skin); neck.position.y = 1.53; body.add(neck);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.105, 14, 12), skin); head.scale.set(0.92, 1.12, 1); head.position.y = 1.67; body.add(head);
+  const cut = new THREE.Mesh(new THREE.SphereGeometry(0.113, 14, 12, 0, Math.PI * 2, 0, Math.PI * 0.62), hair); cut.scale.set(0.95, 1.1, 1.02); cut.position.set(0, 1.685, -0.012); body.add(cut);
+  if (female && Math.random() < 0.6) { const lh = cap(0.085, 0.2, hair, 0, 1.55, -0.07); lh.scale.set(1, 1, 0.7); body.add(lh); }
+  return {root, L, R, AL, AR, body, s, ph: Math.random() * 6.28, speed: 0.95 + Math.random() * 0.6, heading: Math.random() * 6.28, pause: 0, turn: 0, x: 0, z: 0};
+}
+
+function spawnPeople() {
+  if (peopleGroup) { group.remove(peopleGroup); peopleGroup = null; }
+  people = [];
+  if (!peopleOn || !lightPos.length) return;
+  peopleGroup = new THREE.Group(); group.add(peopleGroup);
+  const n = touch ? 6 : 14;
+  for (let tries = 0; people.length < n && tries < 400; tries++) {
+    const l = lightPos[Math.random() * lightPos.length | 0], x = l.x + (Math.random() - 0.5) * 3, z = l.z + (Math.random() - 0.5) * 3;
+    if (!free(x, z) || Math.hypot(x - player.x, z - player.z) < 8 || people.some(p => Math.hypot(p.x - x, p.z - z) < 5)) continue;
+    const p = makePerson(); p.x = x; p.z = z; p.root.position.set(x, 0, z); peopleGroup.add(p.root); people.push(p);
+  }
+}
+
+function updatePeople(dt) {
+  for (const p of people) {
+    const near = Math.hypot(p.x - player.x, p.z - player.z) < 55; p.root.visible = near; if (!near) continue;
+    const toPlayer = Math.hypot(p.x - player.x, p.z - player.z);
+    if (p.pause > 0) { p.pause -= dt; p.ph *= 0.9; }
+    else {
+      if (Math.random() < dt * 0.04) p.pause = 1 + Math.random() * 3;                        // stop and look at phone / wait
+      if (Math.random() < dt * 0.35) p.turn = (Math.random() - 0.5) * 0.8;                    // gentle wandering
+      let target = p.heading + p.turn;
+      const probe = a => free(p.x + Math.sin(a) * 0.9, p.z + Math.cos(a) * 0.9);
+      if (!probe(target)) { for (const d of [0.5, -0.5, 1.0, -1.0, 1.6, -1.6, 2.4, -2.4, 3.1]) if (probe(target + d)) { target += d; break; } p.turn = 0; }
+      let diff = ((target - p.heading + Math.PI * 3) % (Math.PI * 2)) - Math.PI; p.heading += Math.max(-2.2 * dt, Math.min(2.2 * dt, diff));
+      const v = p.speed * (toPlayer < 1.6 ? 0.4 : 1) * dt, nx = p.x + Math.sin(p.heading) * v, nz = p.z + Math.cos(p.heading) * v;
+      if (free(nx, nz)) { p.x = nx; p.z = nz; } else p.heading += 0.8;
+      p.ph += p.speed * 4.3 * dt;
+    }
+    const walking = p.pause <= 0, a = walking ? 1 : 0, ph = p.ph;
+    p.L.hip.rotation.x = Math.sin(ph) * 0.5 * a;  p.R.hip.rotation.x = Math.sin(ph + Math.PI) * 0.5 * a;
+    p.L.knee.rotation.x = Math.max(0, -Math.cos(ph)) * 0.9 * a; p.R.knee.rotation.x = Math.max(0, Math.cos(ph)) * 0.9 * a;
+    p.AL.sh.rotation.x = -Math.sin(ph) * 0.4 * a;  p.AR.sh.rotation.x = Math.sin(ph) * 0.4 * a;
+    p.AL.el.rotation.x = p.AR.el.rotation.x = -0.25 * a;
+    p.body.position.y = Math.abs(Math.cos(ph)) * 0.025 * a * p.s;
+    p.root.position.set(p.x, 0, p.z); p.root.rotation.y = p.heading;
+  }
+}
+$('ppl').onclick = () => { peopleOn = !peopleOn; $('ppl').textContent = 'People: ' + (peopleOn ? 'On' : 'Off'); $('ppl').classList.toggle('on', peopleOn); if (L) spawnPeople(); };
+$('ppl').textContent = 'People: ' + (peopleOn ? 'On' : 'Off'); $('ppl').classList.toggle('on', peopleOn);
+
 // ---------- movement ----------
 const keys = new Set(); let moveStick = {x:0, y:0};
 addEventListener('keydown', e => { if (document.activeElement === $('q')) return; keys.add(e.code); });
@@ -318,7 +392,7 @@ function teleportToSlot(s, lv) {
 async function switchLevel(name) { await load(LEVELS[name].key); buildLevel(name); marker.visible = false; $('card').style.display = 'none';
   const cx = L.slots.reduce((a, s) => a + s.x, 0) / L.slots.length * SCALE, cz = L.slots.reduce((a, s) => a + s.y, 0) / L.slots.length * SCALE;
   const start = lightPos.filter(l => free(l.x, l.z)).sort((a, b) => Math.hypot(a.x - cx, a.z - cz) - Math.hypot(b.x - cx, b.z - cz))[0] || {x: L.slots[0].x * SCALE, z: L.slots[0].y * SCALE};
-  player.x = start.x; player.z = start.z; player.yaw = start.a ? -start.a - Math.PI / 2 : 0; player.pitch = 0; updateSigns(); updateLamps(); updateSigns(); }
+  player.x = start.x; player.z = start.z; player.yaw = start.a ? -start.a - Math.PI / 2 : 0; player.pitch = 0; updateSigns(); updateLamps(); spawnPeople(); }
 
 // ---------- search ----------
 const norm = s => s.toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -357,6 +431,7 @@ let last = performance.now(), acc = 0;
 function frame(t) {
   const dt = Math.min(0.05, (t - last) / 1000); last = t; step(dt);
   camera.position.set(player.x, EYE, player.z); camera.rotation.set(player.pitch, player.yaw, 0);
+  updatePeople(dt);
   if (marker) marker.material.opacity = 0.35 + 0.2 * Math.sin(t / 250);
   if ((acc += dt) > 0.25) { acc = 0; updateSigns(); updateLamps(); }
   drawMini(); renderer.render(scene, camera); requestAnimationFrame(frame);
